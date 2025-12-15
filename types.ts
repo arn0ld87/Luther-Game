@@ -1,27 +1,37 @@
+
 export enum GameState {
-  MENU = 'MENU',
-  PLAYING = 'PLAYING',
-  DEBATE = 'DEBATE',
-  GAME_OVER = 'GAME_OVER',
-  VICTORY = 'VICTORY',
-  ART_STUDIO = 'ART_STUDIO'
+  MENU,
+  PLAYING,
+  DEBATE,
+  ART_STUDIO,
+  VICTORY,
+  GAME_OVER,
+  MAP // Added MAP state
 }
+
+export type ImageSize = "256x256" | "512x512" | "1024x1024";
 
 export interface Question {
   id: number;
   text: string;
-  erasmusArgument: string;
-  correctAnswer: string; // The Lutheran perspective
-  options: { text: string; isLuther: boolean }[];
+  context: string;
 }
 
-export interface ChatMessage {
-  sender: 'user' | 'luther' | 'erasmus' | 'system';
-  text: string;
+// Strictly typed props for components (examples)
+export interface GameCanvasProps {
+  gameState: GameState;
+  onReachCheckpoint: () => void;
+  customTexture: string | null;
+  onCollect: () => void;
+  onHit: () => void;
 }
 
-export enum ImageSize {
-  S_1K = '1K',
-  S_2K = '2K',
-  S_4K = '4K'
+export interface DebateInterfaceProps {
+  question: Question;
+  onComplete: (success: boolean) => void;
+}
+
+export interface ArtStudioProps {
+  onClose: () => void;
+  onApplyTexture: (url: string) => void;
 }
