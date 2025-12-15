@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
-import GameCanvas from './components/GameCanvas';
+import Game2DCanvas from './components/Game2DCanvas';
+import HUD2D from './components/HUD2D';
 import DebateInterface from './components/DebateInterface';
 import ArtStudio from './components/ArtStudio';
 import MapInterface from './components/MapInterface';
@@ -11,7 +12,14 @@ import { useGame } from './context/GameContext';
 
 const GameApp: React.FC = () => {
   const { state, dispatch } = useGame();
-  const { gameState, currentQuestionIndex, score, customTexture, flash } = state;
+  const {
+    gameState,
+    currentQuestionIndex,
+    score,
+    health,
+    maxHealth,
+    flash
+  } = state;
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -74,100 +82,100 @@ const GameApp: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="relative w-full h-screen overflow-hidden bg-black text-white font-sans">
-        {/* 3D Layer with key to reset scene on each level */}
+      <div
+        className="relative w-full h-screen overflow-hidden"
+        style={{
+          backgroundColor: '#000000',
+          fontFamily: '"Press Start 2P", system-ui, sans-serif',
+        }}
+      >
+        {/* 2D Game Canvas */}
         <div className="absolute inset-0 z-0">
-          <ErrorBoundary fallback={<div className="w-full h-full bg-[#2c3e50] flex items-center justify-center text-white">3D-Szene konnte nicht geladen werden.</div>}>
-            <GameCanvas
+          <ErrorBoundary fallback={
+            <div className="w-full h-full bg-[#2c3e50] flex items-center justify-center text-white">
+              2D-Szene konnte nicht geladen werden.
+            </div>
+          }>
+            <Game2DCanvas
               key={currentQuestionIndex + (gameState === GameState.PLAYING ? 'play' : 'pause')}
               gameState={gameState}
               onReachCheckpoint={handleCheckpoint}
-              customTexture={customTexture}
               onCollect={handleCollect}
               onHit={handleHit}
             />
           </ErrorBoundary>
         </div>
 
-        {/* Screen Flash FX */}
-        {flash && (
-          <div
-            className={`absolute inset-0 z-10 pointer-events-none opacity-30 ${
-              flash === 'green' ? 'bg-green-500' : 'bg-red-500'
-            }`}
+        {/* HUD Overlay (only during gameplay) */}
+        {(gameState === GameState.PLAYING || gameState === GameState.DEBATE) && (
+          <HUD2D
+            score={score}
+            health={health}
+            maxHealth={maxHealth}
+            currentStage={currentQuestionIndex + 1}
+            totalStages={QUESTIONS.length}
           />
         )}
 
-        {/* UI Overlay */}
-        <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold font-serif drop-shadow-md" style={{ color: COLORS.primary }}>
-              Sola Fide
-            </h1>
-            <div className="flex flex-col items-end">
-              <div className="bg-black/50 px-4 py-2 rounded mb-2">
-                <span className="text-sm uppercase tracking-widest text-gray-400">Glaubenspunkte</span>
-                <div className="text-2xl font-bold text-white">{score}</div>
-              </div>
-              <div className="bg-black/50 px-2 py-1 rounded text-xs text-gray-400">
-                Etappe {currentQuestionIndex + 1} / {QUESTIONS.length}
-              </div>
-            </div>
-          </div>
+        {/* Screen Flash FX */}
+        {flash && (
+          <div
+            className={`absolute inset-0 z-30 pointer-events-none opacity-30 ${flash === 'green' ? 'bg-green-500' : 'bg-red-500'
+              }`}
+          />
+        )}
 
-          {gameState === GameState.PLAYING && (
-            <div className="text-center pb-10">
-              <p className="text-lg animate-pulse font-serif mb-2" style={{ color: COLORS.primary }}>
-                Lauf zur Kirche! (Pfeiltasten zum Lenken)
-              </p>
-              <div className="flex justify-center gap-8 text-sm opacity-80">
-                <span className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full" />= Gnade (+{GAME_CONFIG.SCORE_COLLECT})
-                </span>
-                <span className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-600 rounded-full" />= Ablass (-{GAME_CONFIG.SCORE_HIT_PENALTY})
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Menus & Modals (pointer-events-auto) */}
+        {/* Menus & Modals */}
 
         {gameState === GameState.MENU && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/90">
             <div
-              className="text-center space-y-8 max-w-lg p-8 border-4 rounded-lg"
-              style={{ borderColor: COLORS.primary, backgroundColor: COLORS.secondary }}
+              className="text-center space-y-6 max-w-lg p-8 border-4 rounded-lg"
+              style={{
+                borderColor: COLORS.primary,
+                backgroundColor: '#1a1a2e',
+                boxShadow: `0 0 20px ${COLORS.primary}40`,
+              }}
             >
-              <h1 className="text-5xl font-serif mb-4" style={{ color: COLORS.primary }}>
-                Der Luther Lauf
+              <h1
+                className="text-3xl mb-4 leading-relaxed"
+                style={{
+                  color: COLORS.primary,
+                  textShadow: `2px 2px 0 ${COLORS.secondary}`,
+                }}
+              >
+                Sola Fide
               </h1>
-              <p className="text-gray-300 text-lg">
-                <b>Spielanleitung:</b>
-                <br />
-                1. Weiche den Ablassbriefen (Rot) aus.
-                <br />
-                2. Sammle die Gnaden-Punkte (Gold).
-                <br />
-                3. Erreiche die Pforte und gewinne die Debatte.
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: '#a0a0a0' }}
+              >
+                <span className="text-white">Der Luther Lauf</span>
+                <br /><br />
+                ▸ Sammle Gnadenpunkte (Gold)<br />
+                ▸ Meide die Ablassbriefe (Rot)<br />
+                ▸ Erreiche das Kreuz für die Debatte
               </p>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 pt-4">
                 <button
                   onClick={startGame}
-                  className="bg-[#e74c3c] hover:bg-[#c0392b] text-white font-bold py-3 px-8 rounded text-xl shadow-lg transition-transform hover:scale-105"
+                  className="bg-[#e74c3c] hover:bg-[#c0392b] text-white py-3 px-6 rounded text-sm transition-all hover:scale-105"
+                  style={{
+                    boxShadow: '0 4px 0 #7f1d1d',
+                    textShadow: '1px 1px 0 #000',
+                  }}
                 >
-                  Spiel starten
+                  ▶ SPIEL STARTEN
                 </button>
                 <button
                   onClick={handleOpenArtStudio}
-                  className="bg-[#3498db] hover:bg-[#2980b9] text-white font-bold py-2 px-6 rounded shadow transition-colors"
+                  className="bg-[#3498db] hover:bg-[#2980b9] text-white py-2 px-4 rounded text-xs transition-colors"
                 >
-                  Atelier (KI-Tools)
+                  Atelier
                 </button>
                 <button
                   onClick={handleOpenMap}
-                  className="bg-[#27ae60] hover:bg-[#2ecc71] text-white font-bold py-2 px-6 rounded shadow transition-colors"
+                  className="bg-[#27ae60] hover:bg-[#2ecc71] text-white py-2 px-4 rounded text-xs transition-colors"
                 >
                   Reichskarte
                 </button>
@@ -176,30 +184,60 @@ const GameApp: React.FC = () => {
           </div>
         )}
 
+        {gameState === GameState.PLAYING && (
+          <div className="absolute bottom-4 left-0 right-0 z-10 text-center pointer-events-none">
+            <p
+              className="text-xs animate-pulse"
+              style={{ color: COLORS.primary }}
+            >
+              Pfeiltasten oder WASD zum Bewegen
+            </p>
+          </div>
+        )}
+
         {gameState === GameState.MAP && (
-          <ErrorBoundary fallback={<div className="absolute inset-0 z-30 flex items-center justify-center bg-black/90 text-white">Karte konnte nicht geladen werden.</div>}>
+          <ErrorBoundary fallback={
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/90 text-white">
+              Karte konnte nicht geladen werden.
+            </div>
+          }>
             <MapInterface />
           </ErrorBoundary>
         )}
 
         {gameState === GameState.DEBATE && (
-          <ErrorBoundary fallback={<div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 text-white">Debatte konnte nicht geladen werden.</div>}>
-            <DebateInterface question={QUESTIONS[currentQuestionIndex]} onComplete={handleDebateComplete} />
+          <ErrorBoundary fallback={
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 text-white">
+              Debatte konnte nicht geladen werden.
+            </div>
+          }>
+            <DebateInterface
+              question={QUESTIONS[currentQuestionIndex]}
+              onComplete={handleDebateComplete}
+            />
           </ErrorBoundary>
         )}
 
         {gameState === GameState.VICTORY && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center" style={{ backgroundColor: `${COLORS.primary}e6` }}>
-            <div className="text-center p-10 bg-white rounded-lg shadow-2xl max-w-xl" style={{ color: COLORS.secondary }}>
-              <h2 className="text-4xl font-serif font-bold mb-4">Sola Gratia!</h2>
-              <p className="text-xl mb-6">
+          <div
+            className="absolute inset-0 z-20 flex items-center justify-center"
+            style={{ backgroundColor: `${COLORS.primary}e6` }}
+          >
+            <div
+              className="text-center p-10 rounded-lg shadow-2xl max-w-xl"
+              style={{ backgroundColor: '#1a1a2e', color: '#ffffff' }}
+            >
+              <h2 className="text-2xl mb-4" style={{ color: COLORS.textGold }}>
+                ✨ Sola Gratia! ✨
+              </h2>
+              <p className="text-sm mb-6">
                 Du hast den Lauf vollendet!
-                <br />
-                Endstand: <b>{score}</b> Glaubenspunkte.
+                <br /><br />
+                Endstand: <span style={{ color: COLORS.textGold }}>{score}</span> Gnadenpunkte
               </p>
               <button
                 onClick={handleBackToMenu}
-                className="text-white px-8 py-3 rounded font-bold hover:bg-black transition-colors"
+                className="text-white px-8 py-3 rounded text-sm hover:opacity-80 transition-opacity"
                 style={{ backgroundColor: COLORS.secondary }}
               >
                 Zurück zum Menü
@@ -208,14 +246,43 @@ const GameApp: React.FC = () => {
           </div>
         )}
 
+        {gameState === GameState.GAME_OVER && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/90">
+            <div
+              className="text-center p-10 rounded-lg shadow-2xl max-w-xl"
+              style={{ backgroundColor: '#1a1a2e', color: '#ffffff' }}
+            >
+              <h2 className="text-2xl mb-4" style={{ color: COLORS.indulgenceItem }}>
+                💀 Niederlage 💀
+              </h2>
+              <p className="text-sm mb-6">
+                Die Ablassbriefe haben dich übermannt.
+                <br />
+                Versuche es erneut!
+              </p>
+              <button
+                onClick={handleBackToMenu}
+                className="text-white px-8 py-3 rounded text-sm hover:opacity-80 transition-opacity"
+                style={{ backgroundColor: COLORS.primary }}
+              >
+                Erneut versuchen
+              </button>
+            </div>
+          </div>
+        )}
+
         {gameState === GameState.ART_STUDIO && (
-          <ErrorBoundary fallback={<div className="absolute inset-0 z-30 flex items-center justify-center bg-black/90 text-white">Atelier konnte nicht geladen werden.</div>}>
+          <ErrorBoundary fallback={
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/90 text-white">
+              Atelier konnte nicht geladen werden.
+            </div>
+          }>
             <ArtStudio onClose={handleCloseArtStudio} onApplyTexture={handleApplyTexture} />
           </ErrorBoundary>
         )}
 
         {/* Footer Info */}
-        <div className="absolute bottom-2 right-2 z-10 text-xs text-gray-500 pointer-events-none">
+        <div className="absolute bottom-2 right-2 z-10 text-xs text-gray-600 pointer-events-none">
           Prof. Jana Zwarg | Klasse 12 | Theologie & Informatik
         </div>
       </div>

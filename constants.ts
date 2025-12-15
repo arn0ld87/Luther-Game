@@ -1,73 +1,144 @@
+import { Question, TileType, MapData, ItemType, EnemyType, Enemy, Direction } from './types';
+import { createEnemy } from './engine/Enemy';
 
-import { Question } from './types';
-
+// Zelda ALTTP-inspired color palette (SNES accurate)
 export const COLORS = {
+  // UI Colors
   primary: '#e67e22',
   secondary: '#2c3e50',
-  player: '#e67e22',
-  playerHead: '#d35400',
-  graceItem: '#f1c40f',
-  graceEmissive: '#f39c12',
-  indulgenceItem: '#c0392b',
-  ground: '#7f8c8d',
-  gatePillar: '#95a5a6',
-  gateTop: '#7f8c8d',
-  gatePlane: '#ecf0f1',
-  path: '#bdc3c7',
-  fog: '#2c3e50',
+
+  // Player
+  player: '#c0392b',       // Luther's robe - dark red
+  playerSkin: '#f5cba7',   // Skin tone
+
+  // Items
+  graceItem: '#f1c40f',    // Gold/yellow for grace
+  indulgenceItem: '#c0392b', // Red for indulgence
+  scrollItem: '#ecf0f1',   // White/cream for scrolls
+
+  // Tiles - SNES Zelda palette
+  grass: '#68b030',        // Light grass
+  grassDark: '#407010',    // Dark grass/shadow
+  path: '#c8a868',         // Dirt path
+  pathDark: '#a08040',     // Path shadow
+  water: '#3890c8',        // Water
+  waterDark: '#2060a0',    // Deep water
+  wall: '#787878',         // Stone wall
+  wallDark: '#505050',     // Wall shadow
+  tree: '#286028',         // Tree foliage
+  treeTrunk: '#805020',    // Tree trunk
+  building: '#d8c880',     // Building walls
+  buildingRoof: '#a04040', // Roof
+
+  // HUD
+  hudBg: '#000000',
+  hudBorder: '#ffffff',
+  heartFull: '#e74c3c',
+  heartEmpty: '#4a4a4a',
+  textGold: '#f1c40f',
 };
 
 export const UI_CONFIG = {
   MAX_PROMPT_LENGTH: 500,
 };
 
+// 2D Game Configuration
 export const GAME_CONFIG = {
+  // Scoring
   SCORE_COLLECT: 10,
   SCORE_HIT_PENALTY: 20,
   SCORE_DEBATE_WIN: 100,
   SCORE_DEBATE_LOSE_PENALTY: 50,
+  SCORE_ENEMY_KILL: 25,
   FLASH_DURATION: 300,
-  LUTHER_MAX_HEALTH: 100,
 
-  // Canvas Config
-  PLAYER_SPEED: 10,
-  PLAYER_LATERAL_SPEED: 8,
-  PLAYER_BOUNDS: { MIN: -4, MAX: 4 },
-  CHECKPOINT_Z: -45, // Gate position
+  // Player
+  PLAYER_SPEED: 3,          // Pixels per frame
+  MAX_HEALTH: 6,            // 6 half-hearts = 3 full hearts
 
-  // Camera
-  CAMERA_FOLLOW_OFFSET_Z: 6,
-  CAMERA_LOOK_AHEAD: 10,
-  CAMERA_SWAY_FACTOR: 0.2,
-
-  // Environment
-  FLOOR_WIDTH: 20,
-  FLOOR_LENGTH: 100,
-  GATE_Z: -48,
-  STARS_COUNT: 2000,
-  FOG_NEAR: 10,
-  FOG_FAR: 50,
-
-  // Items
-  ITEM_START_Z: -5,
-  ITEM_END_Z: -40,
-  ITEM_SPACING: 5,
-  ITEM_SPREAD: 8,
-  ITEM_GOOD_CHANCE: 0.6,
+  // Rendering
+  TILE_SIZE: 16,            // Base tile size in pixels
+  SCALE: 3,                 // Scale factor for retro look
+  CANVAS_WIDTH: 256,        // SNES resolution width
+  CANVAS_HEIGHT: 224,       // SNES resolution height
 
   // Animation
-  PLAYER_BOBBING_SPEED: 10,
-  PLAYER_BOBBING_AMPLITUDE: 0.1,
-  PLAYER_LERP_FACTOR: 0.1,
-  PLAYER_TILT_FACTOR: 0.5,
-  ITEM_ROTATION_SPEED: 0.02,
-  ITEM_FLOAT_SPEED: 2,
-  ITEM_FLOAT_AMPLITUDE: 0.2,
+  ANIM_SPEED: 8,            // Frames per animation cycle
 
-  // Collision
-  COLLISION_RADIUS_X: 0.8,
-  COLLISION_RADIUS_Z: 0.8,
+  // Map
+  VIEWPORT_TILES_X: 16,     // Tiles visible horizontally
+  VIEWPORT_TILES_Y: 14,     // Tiles visible vertically
 };
+
+// Initial test map - Wittenberg town square
+export const INITIAL_MAP: MapData = {
+  width: 20,
+  height: 18,
+  tiles: [
+    // Row 0 - Top border (trees)
+    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+    // Row 1
+    [4, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 4],
+    // Row 2
+    [4, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 4],
+    // Row 3
+    [4, 0, 0, 5, 5, 5, 1, 0, 0, 0, 0, 1, 5, 5, 5, 0, 0, 0, 0, 4],
+    // Row 4 - Building entrance
+    [4, 0, 0, 5, 6, 5, 1, 0, 0, 0, 0, 1, 5, 6, 5, 0, 0, 0, 0, 4],
+    // Row 5
+    [4, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 4],
+    // Row 6 - Main path
+    [4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4],
+    // Row 7
+    [4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 4],
+    // Row 8
+    [4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 4],
+    // Row 9
+    [4, 0, 0, 0, 1, 0, 0, 0, 7, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 4],
+    // Row 10
+    [4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 4],
+    // Row 11
+    [4, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 4],
+    // Row 12
+    [4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
+    // Row 13
+    [4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
+    // Row 14 - Player start area
+    [4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
+    // Row 15
+    [4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
+    // Row 16
+    [4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
+    // Row 17 - Bottom border
+    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+  ],
+  // Collision map (true = blocked)
+  collisions: [],
+  items: [
+    { id: 1, x: 3 * 16, y: 7 * 16, type: ItemType.GRACE, collected: false },
+    { id: 2, x: 15 * 16, y: 7 * 16, type: ItemType.GRACE, collected: false },
+    { id: 3, x: 9 * 16, y: 11 * 16, type: ItemType.GRACE, collected: false },
+    { id: 4, x: 6 * 16, y: 8 * 16, type: ItemType.INDULGENCE, collected: false },
+    { id: 5, x: 12 * 16, y: 8 * 16, type: ItemType.INDULGENCE, collected: false },
+  ],
+  npcs: [],
+  enemies: [],  // Will be populated below
+  checkpointX: 8 * 16,
+  checkpointY: 9 * 16,
+  startX: 8 * 16,
+  startY: 15 * 16,
+};
+
+// Generate collision map from tiles
+export function generateCollisionMap(tiles: number[][]): boolean[][] {
+  const blockedTiles = [TileType.WALL, TileType.WATER, TileType.TREE, TileType.BUILDING];
+  return tiles.map(row =>
+    row.map(tile => blockedTiles.includes(tile))
+  );
+}
+
+// Initialize the collision map
+INITIAL_MAP.collisions = generateCollisionMap(INITIAL_MAP.tiles);
 
 export const QUESTIONS: Question[] = [
   {
