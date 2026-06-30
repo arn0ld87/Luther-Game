@@ -1,0 +1,71 @@
+name: "Feature / Erweiterung"
+description: "Neue Funktionalität oder Erweiterung für das Web-Spiel, das Godot-Projekt oder das Backend vorschlagen."
+title: "[Feature]: "
+labels:
+  - "enhancement"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für den Vorschlag. Bitte so konkret wie möglich beschreiben — vage Wünsche
+        ("besseres Gameplay") sind schwer zu priorisieren und umzusetzen.
+
+        Betrifft der Vorschlag theologische oder historische Inhalte (neue `QUESTIONS`,
+        Gemini-Prompts, Godot-Pendant)? Dann bitte stattdessen die Vorlage
+        **"Theologischer/historischer Content-Vorschlag"** verwenden — dort ist die
+        verpflichtende Quellenangabe bereits vorgesehen.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Beschreibung"
+      description: "Was soll gebaut werden? Welches Problem löst es, welcher Nutzen entsteht für Spieler:innen oder Mitwirkende?"
+      placeholder: "z. B. Erweiterung des Disputatio-Mechanismus um eine zweite Antwortrunde..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Betroffener Bereich"
+      description: "Welcher Teil des Repos ist primär betroffen? Mehrfachauswahl möglich."
+      multiple: true
+      options:
+        - "web (React/Vite-Frontend, Root-Verzeichnis)"
+        - "backend (server.ts / Express / Gemini-API)"
+        - "godot (/game, Godot-4.x-Desktop-Spiel)"
+        - "docs (Architektur-/Produkt-/Planungsdokumentation)"
+        - "sonstiges / unklar"
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: "Akzeptanzkriterien"
+      description: "Woran erkennt man, dass das Feature fertig ist? Bitte als Checkliste."
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+        - [ ] `npm run build` bzw. `godot --headless --import` läuft weiterhin fehlerfrei
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: "Technische Hinweise / Abhängigkeiten"
+      description: "Betroffene Dateien (z. B. constants.ts, GameContext.tsx, server.ts-Route), bekannte Abhängigkeiten zu anderen Issues/PRs, Risiken."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Vorab-Checks"
+      options:
+        - label: "Ich habe geprüft, dass kein vergleichbares Issue bereits existiert."
+          required: true
+        - label: "Der Vorschlag betrifft keine theologischen/historischen Inhalte (sonst Content-Vorlage nutzen)."
+          required: false
