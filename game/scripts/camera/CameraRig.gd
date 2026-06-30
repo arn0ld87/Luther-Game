@@ -20,6 +20,11 @@ extends Node3D
 @export var spring_length: float = 4.5
 @export var collision_margin: float = 0.3
 @export var camera_collision_radius: float = 0.2
+## Physik-Layer, gegen die der SpringArm-Shape-Cast prüft. Default = nur
+## Layer 1 ("world"); Layer 2 ("player") bewusst ausgeschlossen, damit die
+## Kamera nicht mit dem eigenen Charakter-Collider kollidiert. Als Flags-Export,
+## damit der Editor die in project.godot benannten Layer zeigt (keine Magic Number).
+@export_flags_3d_physics var world_collision_mask: int = 1
 @export var position_smoothing: float = 8.0
 @export var initial_pitch_deg: float = -15.0
 @export var pitch_min_deg: float = -40.0
@@ -47,7 +52,7 @@ func _ready() -> void:
 
 	spring_arm.spring_length = spring_length
 	spring_arm.margin = collision_margin
-	spring_arm.collision_mask = 1 # Layer "world" — Layer "player" bewusst ausgeschlossen
+	spring_arm.collision_mask = world_collision_mask # nur "world", "player" ausgeschlossen
 
 	var cast_shape := SphereShape3D.new()
 	cast_shape.radius = camera_collision_radius
@@ -60,7 +65,7 @@ func _ready() -> void:
 	global_position = target.global_position + Vector3.UP * pivot_height
 
 func _physics_process(delta: float) -> void:
-	if target == null:
+	if not is_instance_valid(target):
 		return
 
 	var desired_position: Vector3 = target.global_position + Vector3.UP * pivot_height

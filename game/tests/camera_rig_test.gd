@@ -212,7 +212,7 @@ func _on_physics_frame() -> void:
 		if frame == SETTLE_FRAMES:
 			camera_rig.rotation.y = 0.0
 			spring_arm.rotation.x = 0.0 # Arm waagerecht: die Wandhöhe ist hier kein Faktor
-			camera_rig.rotate_yaw(PI / 2.0) # Vierteldrehung zur dünnen Wand (Vorzeichen ggf. kippen, s. Plan Task 3/4)
+			camera_rig.rotate_yaw(PI / 2.0) # Vierteldrehung zur dünnen Wand bei +X
 			return
 		if frame < SETTLE_FRAMES * 2:
 			return # Spring-Cast in der neuen Richtung einschwingen lassen
