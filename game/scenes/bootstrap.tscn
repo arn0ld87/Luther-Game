@@ -1,6 +1,8 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://assets/buildings/kenney_castle-kit/wall.glb" id="2_wall"]
+[ext_resource type="PackedScene" path="res://scenes/CameraRig.tscn" id="3_camera_rig"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
 size = Vector2(20, 20)
@@ -14,9 +16,20 @@ size = Vector3(1, 1, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_obstacle"]
 size = Vector3(1, 1, 1)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_camera_wall"]
+size = Vector3(1.0, 3.0, 1.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_camera_thin"]
+size = Vector3(0.15, 4.0, 2.0)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_camera_thin"]
+size = Vector3(0.15, 4.0, 2.0)
+
 [node name="Bootstrap" type="Node3D"]
 
 [node name="Floor" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 0
 
 [node name="FloorMesh" type="MeshInstance3D" parent="Floor"]
 mesh = SubResource("PlaneMesh_floor")
@@ -29,18 +42,42 @@ shape = SubResource("BoxShape3D_floor")
 transform = Transform3D(0.8, -0.4, 0.4, 0, 0.7, 0.7, -0.6, -0.6, 0.6, 0, 5, 0)
 shadow_enabled = true
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.857493, 0.514496, 0, -0.514496, 0.857493, 0, 3, 6)
-current = true
-
 [node name="Player" parent="." instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
+[node name="CameraRig" parent="." instance=ExtResource("3_camera_rig")]
+target_path = NodePath("../Player")
+
 [node name="Obstacle" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, 0)
+collision_layer = 1
+collision_mask = 0
 
 [node name="ObstacleMesh" type="MeshInstance3D" parent="Obstacle"]
 mesh = SubResource("BoxMesh_obstacle")
 
 [node name="ObstacleCollision" type="CollisionShape3D" parent="Obstacle"]
 shape = SubResource("BoxShape3D_obstacle")
+
+[node name="CameraWall" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.5)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CameraWallMesh" parent="CameraWall" instance=ExtResource("2_wall")]
+transform = Transform3D(1, 0, 0, 0, 2.29, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="CameraWallCollision" type="CollisionShape3D" parent="CameraWall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("BoxShape3D_camera_wall")
+
+[node name="CameraThinObstacle" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 2.0, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CameraThinObstacleMesh" type="MeshInstance3D" parent="CameraThinObstacle"]
+mesh = SubResource("BoxMesh_camera_thin")
+
+[node name="CameraThinObstacleCollision" type="CollisionShape3D" parent="CameraThinObstacle"]
+shape = SubResource("BoxShape3D_camera_thin")
