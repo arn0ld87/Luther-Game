@@ -7,7 +7,14 @@ Dieses Dokument beschreibt zwei Architekturen nebeneinander:
 1. Die **Ist-Architektur** des bestehenden Web-2D-Spiels (Repo-Root), verifiziert per Code-Lesen und über den Code-Review-Graph (CRG).
 2. Die **Ziel-Architektur** des neuen Godot-4.x-3D-Desktop-Spiels unter `/game`, das gemäß [ADR 001](adr/001-godot-desktop-engine.md) additiv entsteht. `/game` existiert zum Zeitpunkt dieses Dokuments **noch nicht** auf der Festplatte (Stage A: Planung, keine Codeänderung) — Abschnitt 2 ist Zielbild, kein Ist-Zustand.
 
-Grundlage für Abschnitt 1: [`docs/00-discovery/repository-audit.md`](../00-discovery/repository-audit.md) sowie direkte Prüfung von `App.tsx`, `GameApp.tsx`, `context/GameContext.tsx`, `server.ts`, `types.ts`, `vite.config.ts` und ein CRG-Architektur-Scan (`get_architecture_overview_tool`, `list_communities_tool`, Graph-Stand: 25 Dateien, 126 Nodes, 850 Edges, Sprachen TypeScript/TSX/Python).
+Grundlage für Abschnitt 1: [`docs/00-discovery/repository-audit.md`](../00-discovery/repository-audit.md) sowie direkte Prüfung von `App.tsx`, `GameApp.tsx`, `context/GameContext.tsx`, `server.ts`, `types.ts`, `vite.config.ts` und ein CRG-Architektur-Scan. Realer Tool-Output (`build_or_update_graph_tool`, `full_rebuild`, Stand 2026-06-30):
+
+```
+{"status":"ok","build_type":"full","summary":"Full build complete: parsed 25 files, created 134 nodes and 855 edges.",
+ "files_parsed":25,"total_nodes":134,"total_edges":855}
+```
+
+`get_architecture_overview_tool`/`list_communities_tool` (dieselbe Sitzung) gruppieren davon 98 Nodes in 7 Communities (Rest sind File-/Top-Level-Nodes außerhalb der Community-Cluster) — siehe Tabelle unten, Werte direkt aus dem Tool-Output übernommen.
 
 ## 1. Ist-Architektur: Web-2D-Spiel (Repo-Root)
 
