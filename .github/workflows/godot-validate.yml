@@ -1,0 +1,46 @@
+name: Godot Validate
+
+# Headless import-validation for /game. Does not build/export — see
+# docs/architecture/adr/001-godot-desktop-engine.md and game/README.md for
+# why export builds are explicitly out of scope for this CI workflow.
+
+on:
+  push:
+    paths:
+      - "game/**"
+      - ".github/workflows/godot-validate.yml"
+  pull_request:
+    paths:
+      - "game/**"
+      - ".github/workflows/godot-validate.yml"
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    env:
+      GODOT_VERSION: "4.7-stable"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot editor binary
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/godot-editor
+          key: godot-linux-${{ env.GODOT_VERSION }}
+
+      - name: Download Godot editor (headless build)
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot-editor
+          cd ~/godot-editor
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          rm godot.zip
+          chmod +x Godot_v${GODOT_VERSION}_linux.x86_64
+
+      - name: Import /game (headless)
+        run: |
+          GODOT_BIN="$HOME/godot-editor/Godot_v${GODOT_VERSION}_linux.x86_64"
+          "$GODOT_BIN" --headless --path game --import --quit-after 1000

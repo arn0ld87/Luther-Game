@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Godot art-asset packs (binary, externally sourced) — not committed
+godot_assets/
+
+# Local Godot editor binary (downloaded build tool, not a repo artifact)
+.godot-editor/
+game/.godot/
+game/builds/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
