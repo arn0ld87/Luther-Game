@@ -79,7 +79,7 @@ Beide Befehle dürfen keine Fehlermeldungen in der Konsolenausgabe erzeugen.
 
 ## 5. Steuerung
 
-**Aktuell keine.** Die Bootstrap-Szene (`scenes/bootstrap.tscn`) enthält bewusst keinen Spielercode: Das `CharacterBody3D`-Node ist leer (nur eine `CollisionShape3D` als Platzhalter, keine Bewegungs-, Input- oder Kamerasteuerungslogik). Es existiert in dieser Stage schlicht nichts zu steuern — Spielersteuerung ist Folgearbeit eines späteren Meilensteins.
+Seit Meilenstein M1 ist ein Spielercharakter-Controller vorhanden: `scenes/Player.tscn` (`CharacterBody3D` mit `CapsuleShape3D`-Kollision) und `scripts/entities/Player.gd` (`move_and_slide()`-basierte Bewegung, einfache Gravitation, `is_on_floor()`-Bodenerkennung) sind in `scenes/bootstrap.tscn` instanziert. Die Tasten sind aktuell **hartcodiert auf WASD** — ein konfigurierbares Input-Mapping folgt erst in einem künftigen Issue. Kamera-Rig fehlt ebenfalls noch.
 
 ## 6. Export
 

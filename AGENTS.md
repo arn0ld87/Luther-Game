@@ -11,7 +11,11 @@ Intentionally lean — the detailed guidance lives in [`CLAUDE.md`](./CLAUDE.md)
 - **Web prototype (repo root):** React 19 + Vite 6 + Express 5 + `@google/genai`. 2D Canvas
   (`Game2DCanvas` + `engine/`), **not** 3D/R3F. State via `GameContext` + `useReducer`.
 - **Godot migration (`game/`):** Godot 4.7-stable, Forward+ renderer, main scene
-  `res://scenes/bootstrap.tscn`. Bootstrap-Stage (milestone M0). Godot editor is **not** committed.
+  `res://scenes/bootstrap.tscn`. Bootstrap-Stage (milestone M0) is complete; milestone M1
+  ("Spielercharakter mit Bewegung und Kollision") is in progress — a `CharacterBody3D`-based
+  `Player.tscn`/`Player.gd` with `move_and_slide()` movement, gravity, and floor detection is
+  instanced in the bootstrap scene. Camera rig and configurable input mapping are still open.
+  Godot editor is **not** committed.
 
 ## Stack-Map
 

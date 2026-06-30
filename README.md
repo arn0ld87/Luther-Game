@@ -89,7 +89,9 @@ Luther-Game/
 │
 └── game/  (Godot 4.7 — Migrierungsziel)
     ├── project.godot               # Forward+ Renderer, Hauptszene bootstrap.tscn
-    ├── scenes/  scripts/  tests/   # Bootstrap-Stage (Meilenstein M0)
+    ├── scenes/                     # bootstrap.tscn, Player.tscn (CharacterBody3D)
+    ├── scripts/entities/           # Player.gd (Bewegung, Gravitation, Kollision)
+    ├── tests/                      # player_movement_test.gd (headless Behavior-Test)
     └── README.md                   # Godot-Setup & Verifikation
 ```
 
@@ -107,7 +109,7 @@ Die Zustände sind als `GameState`-Enum in `types.ts` definiert. Das 2D-Renderin
 
 ## Godot-Migration
 
-Der Web-Prototyp bleibt als Referenz erhalten; das eigentliche Ziel ist ein Desktop-Spiel unter `game/` mit Godot 4.7-stable (Forward+ Renderer, Hauptszene `res://scenes/bootstrap.tscn`, Meilenstein **M0** — Bootstrap-Stage).
+Der Web-Prototyp bleibt als Referenz erhalten; das eigentliche Ziel ist ein Desktop-Spiel unter `game/` mit Godot 4.7-stable (Forward+ Renderer, Hauptszene `res://scenes/bootstrap.tscn`). Meilenstein **M0** (Bootstrap-Stage) ist abgeschlossen; **M1** ist mit dem Spielercharakter-Controller (`scenes/Player.tscn`, `scripts/entities/Player.gd` — `move_and_slide()`-Bewegung, Gravitation, Bodenkollision) als erstem Schritt in Arbeit. Kamera-Rig und konfigurierbares Input-Mapping (aktuell hartcodierte WASD-Tasten) folgen noch.
 
 **Godot-Editor nicht im Repo** — jede Person lädt ihn selbst herunter und verifiziert den SHA512-Hash gegen die Release-SUMS (siehe [`game/README.md`](./game/README.md)). GitHub-Validierung läuft über [`.github/workflows/godot-validate.yml`](./.github/workflows/godot-validate.yml).
 
@@ -185,16 +187,17 @@ Express-Server in `server.ts`, jede Route try/catch mit gültigem Fallback-Objek
 
 - Keine formelle Test-Suite — Verifikation erfolgt via `npm run build` und manuellem Spieltest (Browser-Konsole prüfen).
 - Der Web-Prototyp ist 2D, kein 3D/R3F — ältere Doku, die von Three.js spricht, ist veraltet.
-- Die Godot-Migration befindet sich in der Bootstrap-Stage (M0); noch kein vollständiger Vertical Slice.
+- Die Godot-Migration: M0 (Bootstrap-Stage) ist abgeschlossen, M1 (Spielercharakter) ist in Arbeit; noch kein vollständiger Vertical Slice.
 - Theologische Inhalte sind pädagogisch kuratiert, ersetzen aber keine akademische oder seelsorgerliche Expertise.
 
 ## Entwicklungsstatus
 
-**v1.0.0** — Web-Prototyp spielbar (2D), Godot-Migration in Bootstrap-Stage.
+**v1.0.0** — Web-Prototyp spielbar (2D), Godot-Migration: M0 (Bootstrap-Stage) abgeschlossen, M1 (Spielercharakter mit Bewegung/Kollision) in Arbeit.
 
 **Aktueller Fokus:**
 
-- Godot-Fundament unter `game/` ausbauen (Controller, Kamera, Quest/Dialog/Debatte)
+- M1 fortsetzen: Kamera-Rig und konfigurierbares Input-Mapping (Player-Controller mit Bewegung/Gravitation/Kollision steht bereits)
+- Quest-/Dialog-/Debatte-Systeme für den Godot-Teil planen
 - Veraltete 3D-Referenzen aus Doku und Metadaten entfernen
 - Build-Verifikation & GitHub-Workflow für den Godot-Teil stabilisieren
 

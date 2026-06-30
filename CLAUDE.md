@@ -6,7 +6,7 @@ Guidance for Claude Code when working in this repo.
 
 **Sola Fide: The Luther Run** — educational game teaching Reformation theology through gameplay. Currently a **2D-Canvas web prototype** (React 19 + Vite, `components/Game2DCanvas.tsx` + `engine/`), **not** 3D/R3F — older docs referencing Three.js are outdated. An Express backend proxies the Gemini API for theological validation and AI asset generation.
 
-Active migration: the web prototype is being replaced by a Godot 4.7 desktop engine under `game/` (Bootstrap-Stage, milestone M0). See [`game/README.md`](./game/README.md) and [`.github/workflows/godot-validate.yml`](./.github/workflows/godot-validate.yml).
+Active migration: the web prototype is being replaced by a Godot 4.7 desktop engine under `game/`. Bootstrap-Stage (milestone M0) is complete; milestone M1 ("Spielercharakter mit Bewegung und Kollision") is in progress, starting with player movement/collision. See [`game/README.md`](./game/README.md) and [`.github/workflows/godot-validate.yml`](./.github/workflows/godot-validate.yml).
 
 ## Commands
 
@@ -29,7 +29,7 @@ Active migration: the web prototype is being replaced by a Godot 4.7 desktop eng
 - 2D rendering via `components/Game2DCanvas.tsx` (SNES-style 256×224, scale 3) backed by `engine/` (`Player2D`, `Enemy`, `Combat`, `EnemyRenderer`, `ItemRenderer`, `TileRenderer`)
 - `constants.ts` holds all tunables: `COLORS`, `GAME_CONFIG` (scores/speeds/collision radii/canvas/camera), `QUESTIONS` (theological debate content)
 - `server.ts` exposes `/api/check-theology`, `/api/deep-dive`, `/api/generate-asset`, `/api/edit-asset` — each Gemini model is pinned per-route (validation vs. deep reasoning vs. image gen); don't swap models without checking the route's purpose
-- Godot side (`game/`): `project.godot` (Forward+ renderer, main scene `res://scenes/bootstrap.tscn`), `scenes/`, `scripts/`, `tests/` — separate from the web prototype
+- Godot side (`game/`): `project.godot` (Forward+ renderer, main scene `res://scenes/bootstrap.tscn`), `scenes/`, `scripts/`, `tests/` — separate from the web prototype. First real gameplay code (M1): `scenes/Player.tscn` (`CharacterBody3D` + `CapsuleShape3D` collision) and `scripts/entities/Player.gd` (`move_and_slide()`-based movement, hardcoded WASD pending a future Input-Map issue, gravity, `is_on_floor()`), instanced from `bootstrap.tscn`; covered by a headless behavior test in `tests/player_movement_test.gd`
 
 ## Hard Rules
 
