@@ -36,6 +36,7 @@ Ein Code-PR im Web-Teil ist „done", wenn zusätzlich zu den allgemeinen Kriter
 - **Beide Dev-Server (`npm run dev` + `npm run server`) lokal gestartet und Browser-Konsole auf Fehler geprüft**, bevor die Änderung als funktionsfähig behauptet wird — reiner Build-Erfolg ersetzt diesen manuellen Check nicht.
 - **Minimal-Diff bei kleinen Fixes** — kein ungefragter Refactor unbeteiligter Komponenten.
 - **Path-Alias `@/*` weiterhin korrekt aufgelöst**, keine gebrochenen Imports.
+- **Passender Subagent aus `AGENTS.md` als Review-Schritt, analog zu `theology-accuracy-reviewer`** (siehe `historical-and-theological-content-policy.md`, `test-plan.md`): `api-security-reviewer` bei Änderungen an `server.ts`/`services/gemini.ts`, `canvas2d-perf-reviewer` bei Änderungen an `Game2DCanvas.tsx`/`engine/*`. Empfohlen vor dem Merge, kein hartes Blocker-Gate wie bei Theologie-Inhalten.
 
 ## (c) Code-PRs im neuen Godot-Teil (`/game`)
 
