@@ -164,7 +164,7 @@ Express-Server in `server.ts`, jede Route try/catch mit gültigem Fallback-Objek
 | Route                      | Zweck                          | Gemini-Modell                     |
 |----------------------------|--------------------------------|-----------------------------------|
 | `POST /api/check-theology` | Theologische Validierung       | `gemini-2.5-flash-lite-latest`    |
-| `POST /api/deep-dive`      | Tiefergehende Erklärungen      | `gemini-2.0-flash-thinking-exp-…` |
+| `POST /api/deep-dive`      | Tiefergehende Erklärungen      | `gemini-2.0-flash-thinking-exp-01-21` |
 | `POST /api/generate-asset` | KI-Bildgenerierung             | `gemini-3-pro-image-preview`      |
 | `POST /api/edit-asset`     | KI-Bildbearbeitung             | `gemini-2.0-flash`                |
 
