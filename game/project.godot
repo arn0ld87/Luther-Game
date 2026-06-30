@@ -15,6 +15,7 @@ config/description="Godot 4.x desktop foundation for the Reformation theology le
 run/main_scene="res://scenes/bootstrap.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
-[rendering]
+[layer_names]
 
-renderer/rendering_method="forward_plus"
+3d_physics/layer_1="world"
+3d_physics/layer_2="player"
