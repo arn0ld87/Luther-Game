@@ -1,0 +1,89 @@
+name: "Bug Report"
+description: "Einen Fehler im Web-Spiel, im Godot-Projekt oder im Backend melden."
+title: "[Bug]: "
+labels:
+  - "bug"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bitte so konkret wie möglich beschreiben, damit der Fehler reproduzierbar ist.
+        Bekannte, bereits dokumentierte Altlasten (z. B. die 12 vorbestehenden
+        TypeScript-Fehler aus `npx tsc --noEmit`, siehe
+        `docs/00-discovery/repository-audit.md` Abschnitt 3) bitte nur melden,
+        wenn sich das Verhalten konkret verschlechtert hat — nicht erneut als Duplikat.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Betroffener Bereich"
+      description: "Welcher Teil des Repos ist betroffen?"
+      multiple: true
+      options:
+        - "web (React/Vite-Frontend, Root-Verzeichnis)"
+        - "backend (server.ts / Express / Gemini-API)"
+        - "godot (/game, Godot-4.x-Desktop-Spiel)"
+        - "docs (Architektur-/Produkt-/Planungsdokumentation)"
+        - "sonstiges / unklar"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Schritte zur Reproduktion"
+      description: "Möglichst genau, Schritt für Schritt."
+      placeholder: |
+        1. `npm run dev` und `npm run server` gestartet
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Erwartetes Verhalten"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Tatsächliches Verhalten"
+      description: "Inkl. Fehlermeldung, Stacktrace oder Screenshot, falls vorhanden."
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Umgebung"
+      description: "OS, Browser + Version (bei web/backend), Godot-Version (bei /game), Node-Version, Branch/Commit."
+      placeholder: |
+        - OS: macOS 26 / Windows 11 / ...
+        - Browser: Chrome 138 / ...
+        - Godot-Version: 4.3-stable / entfällt
+        - Node-Version: v26.0.0
+        - Branch/Commit: main @ <hash>
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs / Konsolenausgabe / Screenshots"
+      description: "Browser-Konsole, Terminal-Output von npm run server, oder godot --headless-Output, falls relevant."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Vorab-Checks"
+      options:
+        - label: "Ich habe geprüft, dass kein vergleichbares Issue bereits existiert."
+          required: true
+        - label: "Der Fehler tritt auf dem aktuellen main-Branch reproduzierbar auf."
+          required: true

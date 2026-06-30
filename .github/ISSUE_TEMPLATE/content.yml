@@ -1,0 +1,86 @@
+name: "Theologischer/historischer Content-Vorschlag"
+description: "Neue oder geänderte Glaubensfrage, Bibelstelle oder historischen Kontext für QUESTIONS bzw. das Godot-Pendant vorschlagen."
+title: "[Content]: "
+labels:
+  - "enhancement"
+  - "documentation"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Verbindliche Grundlage ist
+        [`docs/product/historical-and-theological-content-policy.md`](../../docs/product/historical-and-theological-content-policy.md).
+        Bitte vor dem Ausfüllen lesen — insbesondere Abschnitt 2 (zulässige Quellen),
+        Abschnitt 4 (No-Gos) und Abschnitt 5 (Qualitätsmaßstab der drei bestehenden Fragen).
+
+        Wichtig: Gemini-generierte Inhalte (`services/gemini.ts`) sind **keine** zulässige
+        Quelle für neue `QUESTIONS`-Einträge — sie sind Bewertungswerkzeug zur Laufzeit,
+        nicht Beleg. Vorschläge ohne benannte Primär- oder anerkannte Sekundärquelle werden
+        gemäß Policy Abschnitt 6 nicht priorisiert.
+
+  - type: input
+    id: topic
+    attributes:
+      label: "Vorgeschlagene Frage / Thema"
+      description: "Die konkrete Glaubensfrage bzw. das reformationsgeschichtliche Thema, das fehlt."
+      placeholder: "z. B. Ablasshandel / 95 Thesen"
+    validations:
+      required: true
+
+  - type: textarea
+    id: theological-context
+    attributes:
+      label: "Theologischer und historischer Kontext"
+      description: "Welches theologische Spannungsfeld wird verhandelt (z. B. Sola Fide vs. Werkgerechtigkeit)? Lutherische Position und erkennbare katholische Gegenposition gemäß Policy Abschnitt 2/4 jeweils benennen."
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: "Quellenangabe (Pflichtfeld)"
+      description: >-
+        Mindestens eine Primärquelle (Bibelstelle mit Stellenangabe, Luther-Schrift) oder
+        anerkannte Sekundärquelle gemäß Policy Abschnitt 2. Keine Wikipedia-Zusammenfassung
+        als alleinige Quelle, keine unbelegten Allgemeinplätze, keine Gemini-Ausgabe als Quelle.
+      placeholder: |
+        - Bibelstelle: z. B. Matthäus 16,18 (Lutherbibel)
+        - Primärquelle: z. B. Luther, 95 Thesen, These 21
+        - Sekundärquelle: z. B. Volker Leppin, "Martin Luther", ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: "Geltungsbereich"
+      description: "Für welchen Teil des Projekts ist der Inhalt vorgesehen?"
+      multiple: true
+      options:
+        - "web (constants.ts QUESTIONS, bestehendes 2D-Spiel)"
+        - "godot (/game, geplantes Godot-4-3D-Spiel)"
+        - "beide / noch unklar"
+    validations:
+      required: true
+
+  - type: textarea
+    id: draft-question
+    attributes:
+      label: "Entwurf: Frage + context-Feld"
+      description: "Optionaler Formulierungsentwurf nach dem Muster der drei bestehenden Einträge (siehe Policy Abschnitt 5)."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Vorab-Checks gemäß Content-Policy"
+      options:
+        - label: "Ich habe docs/product/historical-and-theological-content-policy.md gelesen."
+          required: true
+        - label: "Der Vorschlag projiziert keine späteren Begriffe/Konflikte anachronistisch zurück (Policy Abschnitt 4)."
+          required: true
+        - label: "Beide Positionen (lutherisch und ggf. katholische Gegenposition) werden ernsthaft dargestellt, keine Karikatur (Policy Abschnitt 4)."
+          required: true
+        - label: "Mir ist bewusst, dass dies vor Aufnahme in constants.ts den Review durch theology-accuracy-reviewer durchläuft (Policy Abschnitt 3)."
+          required: true
