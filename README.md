@@ -1,5 +1,9 @@
 # Sola Fide: The Luther Run
 
+<p align="center">
+  <img src=".github/assets/logo.png" alt="Sola Fide: The Luther Run — Logo" width="280">
+</p>
+
 **Lernspiel über die Reformationstheologie — 2D-Web-Prototyp (React + Canvas) mit laufender Migration auf Godot 4.7 als Desktop-Engine.**
 
 Spieler navigiert theologische Dilemmata, sammelt Gnadenpunkte, meidet Ablasshandel und bestreitet Debatten über die Reformation. Ein Express-Backend proxyt die Gemini API für theologische Validierung und KI-Asset-Generierung.
