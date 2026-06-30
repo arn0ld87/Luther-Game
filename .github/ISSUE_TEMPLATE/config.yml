@@ -1,0 +1,11 @@
+# Blanko-Issues deaktiviert: jede Meldung soll über eine der strukturierten Vorlagen laufen
+# (Feature, Bug, Content), damit Pflichtfelder (z. B. Quellenangabe bei theologischen
+# Inhalten) nicht übersprungen werden können.
+blank_issues_enabled: false
+
+# CONTRIBUTING.md existiert (Stage-A-Planungsstand 2026-06-30), daher hier per
+# contact_link verlinkt.
+contact_links:
+  - name: "Mitwirken / Contributing-Guide"
+    url: "https://github.com/arn0ld87/Luther-Game/blob/main/CONTRIBUTING.md"
+    about: "Bevor du ein Issue eröffnest: Workflow, Build- und Review-Anforderungen lesen."

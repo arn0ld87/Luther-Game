@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 
-# Godot art-asset packs (binary, externally sourced) — not committed
+# Godot art-asset packs (binary, externally sourced) — not committed, see docs/00-discovery/repository-audit.md
 godot_assets/
 
 # Local Godot editor binary (downloaded build tool, not a repo artifact)
