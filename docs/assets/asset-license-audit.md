@@ -19,8 +19,8 @@
 |---|---|
 | `APPROVED` (CC0 / Public Domain) | 14 |
 | `APPROVED_WITH_ATTRIBUTION` (CC-BY 3.0) | 6 |
-| `QUARANTINED` (Herkunft/Lizenz unklar) | 2 |
-| `EXCLUDED` (restriktiv bzw. nicht vorhanden) | 2 |
+| `QUARANTINED` (Herkunft/Lizenz unklar) | 0 |
+| `EXCLUDED` (restriktiv bzw. nicht auflösbar / nicht vorhanden) | 4 |
 | **Registereinträge gesamt** | **24** |
 
 ## Prüfmethode
@@ -69,10 +69,11 @@ Alle über poly.pizza verifiziert (Abruf 2026-07-01), Lizenzlink jeweils → `cr
 
 ## QUARANTINED — Herkunft/Lizenz nicht eindeutig verifizierbar
 
-- **`polypizza_gothic-set/Church.glb`** und **`polypizza_gothic-set/Church (1).glb`** — `MANIFEST.md` nennt mehrere Church-Suchvarianten (`6vzTphxL9w4`, `8jSIJfw17cz`, `GHzPfvoyzX`) **ohne eindeutige Datei-zu-URL-Zuordnung**. Keine dieser konkreten Dateien konnte einer einzeln verifizierten poly.pizza-Quelle zugeordnet werden. Konservativ zurückgestellt — **nicht** verwenden, bis pro Datei die Quelle eindeutig belegt ist. (Der bereits freigegebene `polypizza_church_poly-by-google.glb` ist eine **andere**, kleinere Datei mit belegter CC-BY-Quelle.)
+_Keine Einträge._ Die zuvor quarantänierten poly.pizza-Church-Varianten wurden nach Prüfung der Kandidatenquellen auf `EXCLUDED` gesetzt (siehe unten).
 
-## EXCLUDED — restriktiv oder nicht vorhanden
+## EXCLUDED — restriktiv, nicht auflösbar oder nicht vorhanden
 
+- **`polypizza_gothic-set/Church.glb`** und **`polypizza_gothic-set/Church (1).glb`** — `MANIFEST.md` nennt drei Church-Suchvarianten **ohne eindeutige Datei-zu-URL-Zuordnung**. Verifikation der Kandidatenquellen (offizielle poly.pizza-Seiten, Abruf 2026-07-01): `https://poly.pizza/m/6vzTphxL9w4` → **CC-BY** (Autor: Poly by Google), `https://poly.pizza/m/8jSIJfw17cz` → **CC-BY** (Autor: Poly by Google), `https://poly.pizza/m/GHzPfvoyzX` → **CC0** (Autor: CreativeTrio). Die Kandidaten stammen damit von **zwei verschiedenen Autoren und Lizenzen**; ohne eindeutige Datei-zu-Quelle-Zuordnung ist die bei CC-BY **zwingende korrekte Attribution nicht garantierbar**. Zudem sind beide Varianten **redundant** zur bereits freigegebenen, verifizierten `polypizza_church_poly-by-google.glb` (eigene, belegte CC-BY-Quelle). Konservativ **ausgeschlossen**.
 - **`oga_music/ChurchBell_ccbysa.mp3`** — verifiziert **CC-BY-SA 3.0** (Ulrich Metzner, submitted by qubodup; OGA). Share-Alike verlangt, dass abgeleitete Werke unter denselben Bedingungen stehen — für ein potenziell veröffentlichtes, nicht-SA-Spiel rechtlich unpassend. **Ausgeschlossen.** Ersatz: eine CC0-Glocke suchen, falls ein Glockenklang gebraucht wird.
 - **Sketchfab Monk Character (Inuciian, CC-BY 4.0)** — laut `MANIFEST.md` „noch offen, Login erforderlich", **nicht im Bestand**. Außerhalb des Scope; **ausgeschlossen**, bis (falls gewünscht) bewusst geladen und dann als CC-BY mit Attribution geführt.
 
