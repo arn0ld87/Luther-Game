@@ -22,6 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Asset-License-Gate (jede Modell-/Audio-Datei muss katalogisiert sein)
+        # node ist auf ubuntu-latest vorinstalliert; kein Godot nötig.
+        # Schlägt fehl, sobald ein un-katalogisiertes (un-auditiertes) Asset unter
+        # game/assets/ liegt. Siehe docs/contributing/asset-license-checklist.md.
+        run: node game/tools/check_asset_licenses.mjs
+
       - name: Cache Godot editor binary
         id: godot-cache
         uses: actions/cache@v4

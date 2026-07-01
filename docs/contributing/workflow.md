@@ -135,7 +135,10 @@ unterscheiden sich entsprechend:
     siehe [Roadmap](../planning/roadmap.md)
   - Neue Assets aus `godot_assets/` nur nach Lizenzprüfung (`License.txt` der
     jeweiligen Quelle wörtlich lesen, nicht annehmen) und nur als gezielter
-    Import, nicht als Verzeichniskopie
+    Import, nicht als Verzeichniskopie — verpflichtender Freigabeprozess:
+    [`asset-license-checklist.md`](./asset-license-checklist.md). Der CI-License-Gate
+    (`node game/tools/check_asset_licenses.mjs` in `godot-validate.yml`) schlägt fehl,
+    sobald ein Modell/Audio unter `game/assets/` nicht im Asset-Katalog geführt ist.
 - Web-Teil und Godot-Teil sind durch Verzeichnistrennung entkoppelt: ein
   Godot-PR ändert nie Dateien im Root-Web-Verzeichnis und umgekehrt, außer es
   handelt sich explizit um eine repo-weite Doku-/CI-Änderung
