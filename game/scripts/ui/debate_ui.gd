@@ -138,6 +138,19 @@ func _get_progress() -> Node:
 	return get_tree().root.get_node_or_null("/root/DebateProgress")
 
 
+## AudioManager-Lookup (Issue #18) — gleiche headless-robuste Pattern wie oben.
+func _audio_manager() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().root.get_node_or_null("/root/AudioManager")
+
+
+func _play_ui_click() -> void:
+	var am := _audio_manager()
+	if am != null:
+		am.play_ui_click()
+
+
 func _connect_progress() -> void:
 	var progress := _get_progress()
 	if progress != null and not progress.is_connected("progress_changed", _on_progress_changed):
@@ -175,6 +188,7 @@ func _set_answer_buttons_enabled(is_enabled: bool) -> void:
 
 
 func _on_answer(answer: String) -> void:
+	_play_ui_click()
 	if _finished:
 		return
 	var res := _evaluator.evaluate(_current_question_id, answer)
@@ -191,6 +205,12 @@ func _on_answer(answer: String) -> void:
 	_result_label.modulate = Color(0.3, 0.9, 0.3) if won else Color(0.9, 0.3, 0.3)
 	_finished = true
 	_set_answer_buttons_enabled(false)
+	# Issue #18 — akustisches Debattenausgang-Feedback. Das sichtbare Pendant
+	# (_result_label „SIEG"/„NIEDERLAGE") ist das Untertitel-Äquivalent für
+	# hörgeschädigte Spieler:innen (Accessibility, gleicher Informationsgehalt).
+	var am := _audio_manager()
+	if am != null:
+		am.play_debate_result(won)
 	if not won:
 		_again_button.show()
 	_close_button.show()

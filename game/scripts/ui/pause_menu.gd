@@ -80,6 +80,11 @@ func _build_ui() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
+	# Issue #18 — Lautstärkeregler (Musik/SFX) wirken sofort beim Verschieben
+	# und werden vom AudioManager persistiert (überleben Neustart).
+	_add_volume_slider(vbox, "Musik", "music")
+	_add_volume_slider(vbox, "Effekte", "sfx")
+
 	_save_btn = _add_button(vbox, "Speichern", _on_save)
 	_load_btn = _add_button(vbox, "Laden", _on_load)
 	_add_button(vbox, "Weiterspielen", _on_resume)
@@ -95,6 +100,48 @@ func _add_button(parent: Control, label: String, cb: Callable) -> Button:
 	b.pressed.connect(cb)
 	parent.add_child(b)
 	return b
+
+
+func _add_volume_slider(parent: Control, label: String, bus: String) -> void:
+	# Issue #18 — horizontaler Regler 0..1 (linear), sofort wirksam + persistiert.
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var l := Label.new()
+	l.text = label
+	l.custom_minimum_size = Vector2(80, 0)
+	row.add_child(l)
+	var s := HSlider.new()
+	s.min_value = 0.0
+	s.max_value = 1.0
+	s.step = 0.01
+	s.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var am := _save_manager_audio()
+	s.value = _audio_volume(bus, am)
+	s.value_changed.connect(func(v: float) -> void: _set_audio_volume(bus, v, am))
+	row.add_child(s)
+	parent.add_child(row)
+
+
+func _save_manager_audio() -> Node:
+	# AudioManager-Lookup (gleiche headless-robuste Pattern wie SaveManager).
+	return get_tree().root.get_node_or_null("/root/AudioManager")
+
+
+func _audio_volume(bus: String, am: Node) -> float:
+	if am == null:
+		return 1.0
+	if bus == "music":
+		return float(am.get_music_volume())
+	return float(am.get_sfx_volume())
+
+
+func _set_audio_volume(bus: String, v: float, am: Node) -> void:
+	if am == null:
+		return
+	if bus == "music":
+		am.set_music_volume(v)
+	else:
+		am.set_sfx_volume(v)
 
 
 func _toggle() -> void:

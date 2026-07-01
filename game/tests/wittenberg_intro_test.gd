@@ -36,12 +36,15 @@ func _initialize() -> void:
 		return
 	print("PASS Ground present")
 
-	var music := level.get_node_or_null("AmbientMusic") as AudioStreamPlayer
-	if music == null:
-		push_error("FAIL: AmbientMusic player missing")
+	# Issue #18 — Hintergrundmusik wird zentral vom AudioManager-Autoload gespielt
+	# (nicht mehr als AmbientMusic-Player im Level). Prüfe nur, dass das Autoload
+	# geladen ist; Bus-/Musik-Details deckt audio_test ab.
+	var am := root.get_node_or_null("AudioManager")
+	if am == null:
+		push_error("FAIL: AudioManager-Autoload fehlt")
 		quit(1)
 		return
-	print("PASS AmbientMusic present")
+	print("PASS AudioManager-Autoload present")
 
 	var building_count: int = level.get("building_count")
 	var prop_count: int = level.get("prop_count")
