@@ -87,3 +87,13 @@ jobs:
             echo "::error::Asset-Integrationstest meldet ERROR-Zeilen"
             exit 1
           fi
+
+      - name: Run quest data model test (headless, fail on ERROR)
+        run: |
+          set -o pipefail
+          GODOT_BIN="$HOME/godot-editor/Godot_v${GODOT_VERSION}_linux.x86_64"
+          "$GODOT_BIN" --headless --path game --script res://tests/quest_data_test.gd 2>&1 | tee quest_test.log
+          if grep -E "^(ERROR|SCRIPT ERROR)" quest_test.log; then
+            echo "::error::Quest-Datenmodell-Test meldet ERROR-Zeilen"
+            exit 1
+          fi

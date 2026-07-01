@@ -105,3 +105,4 @@ camera_zoom_out={
 [autoload]
 
 TheologyData="*res://scripts/autoload/theology_data.gd"
+QuestData="*res://scripts/autoload/quest_data.gd"
