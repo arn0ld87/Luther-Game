@@ -177,6 +177,12 @@ func _test_progress() -> bool:
 	if int(progress.call("won_count")) != 1:
 		return _fail("Progress: Niederlage darf won_count nicht erhöhen")
 
+	# Re-Entry-Schutz: die verlorene UI ist noch offen (_triggered==false). Erneutes Betreten
+	# darf KEIN zweites Overlay öffnen, sondern die bestehende UI-Instanz behalten.
+	t2.call("_on_body_entered", d2)
+	if t2.call("get_debate_ui") != ui2:
+		return _fail("Progress: Re-Entry bei offener verlorener UI öffnete ein zweites Overlay (Leak)")
+
 	ui1.queue_free()
 	ui2.queue_free()
 	d1.queue_free()

@@ -26,6 +26,12 @@ func _ready() -> void:
 func _on_body_entered(_body: Node3D) -> void:
 	if _triggered:
 		return
+	# Re-Entry bei noch offenem Overlay ignorieren: nach einer Niederlage ist _triggered
+	# wieder false, die verlorene DebateUI kann aber noch offen sein (Spieler hat sie noch
+	# nicht geschlossen). Ohne diesen Guard würde erneutes Betreten ein zweites Overlay
+	# instanziieren und die alte Instanz als Leak im Baum zurücklassen.
+	if is_instance_valid(_debate_ui) and _debate_ui.is_inside_tree():
+		return
 	_triggered = true
 	var qid := _resolve_question_id()
 	station_entered.emit(qid)
