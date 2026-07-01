@@ -194,3 +194,30 @@ Die Trennung in `/` (Web-2D-Spiel) und `/game` (Godot-3D-Spiel) als zwei paralle
 - **Isolation ermöglicht Rollback:** Da `/game` rein additiv ist, kann es laut ADR 001 jederzeit folgenlos entfernt werden, falls sich Godot/GDScript als ungeeignet erweist — der bestehende Web-Teil bleibt unberührt. Diese Rückbaubarkeit wäre bei einer Vermischung der Codebasen (z. B. gemeinsamer Build-Pipeline) nicht gegeben.
 - Die Verzeichnistrennung spiegelt auch die **Toolchain-Trennung**: Mitwirkende am Web-Teil brauchen nur Node/npm, Mitwirkende am Godot-Teil nur den Godot-Editor — niemand muss zwingend beide Stacks beherrschen, um an einem der beiden Teile zu arbeiten.
 - Die bereits vorhandenen `godot_assets/` (Kenney/Quaternius, lowpoly, passend zum Wittenberg-Setting) wurden als reales Signal für die Engine-Wahl gewertet, nicht nur als offene Asset-Frage — sie fließen ausschließlich in `/game/assets/` ein, nie in den Web-Teil.
+
+## 6. Format-Entscheidung: Quest-/Dialog-Datenmodell (M2, Issue #14)
+
+Für das Quest-/Dialog-Datenmodell des Godot-Spiels standen zwei native Godot-4.x-Optionen zur Wahl (siehe Issue #14 und Roadmap M2). Die Entscheidung ist hier verbindlich getroffen:
+
+**Entscheidung: JSON auf Platte als Serialisierungsformat, plus eine typisierte GDScript-Modellklasse (`class_name QuestStation extends Resource`) als Zugriffsschicht.**
+
+| Kriterium | `.tres` (Godot-`Resource`-Instanzen) | **JSON + typisiertes Modell (gewählt)** |
+|---|---|---|
+| Editor-Inspector-Integration | ja, nativ | nein (JSON wird über Loader geparst); Typsicherheit kommt aus der `QuestStation`-Klasse |
+| Typsicherheit für Konsumenten (#15/#16) | ja | ja — `QuestStation` mit `@export`-Feldern + `from_dict()` |
+| Generierbarkeit `constants.ts` → Godot (Risk 6) | schlecht — `.tres` ist ein Godot-spezifisches Serialisierungsformat, das ein Generator nur umständlich erzeugt | **gut — JSON ist trivial aus einem TS-Modul zu emittieren** |
+| Diff-/Review-Tauglichkeit | mäßig (Ressourcen-Metadaten im Diff) | **gut — reiner Text-Diff** |
+| Konsistenz mit Bestand | — | **hoch — spiegelt das in M1 etablierte `theology_questions.json` + `TheologyData`-Autoload-Muster** |
+
+**Begründung (Risk Register Risiko 6 — Doppelpflege theologischer Inhalte):** Eine reine `.tres`-Lösung würde einen späteren automatisierten Single-Source-of-Truth-Generator (`constants.ts` → Godot) strukturell erschweren, da `.tres` nicht ohne Godot-Werkzeuge sinnvoll erzeugbar ist. JSON hält diese Generator-Pipeline offen. Gleichzeitig liefert die typisierte `QuestStation`-Klasse die Vorteile einer `Resource` (typsichere Felder, stabile API, optional später als `.tres` authorbar), ohne pro Eintrag eine Datei zu erzwingen. Die Single-Source-of-Truth-Entscheidung selbst (manuelle Duplikation vs. Generator) bleibt bewusst Folgearbeit (Issue #15 / eigenes Risk-6-Issue) — die hier getroffene Formatwahl verbaut keine der beiden Varianten.
+
+**Realisierung im Code (`/game`):**
+
+| Baustein | Datei | Rolle |
+|---|---|---|
+| Typisiertes Modell | `game/scripts/data/quest_station.gd` | `QuestStation extends Resource` — Felder `id`, `title`, `question_text`, `scripture_reference` (Pendant zu Web-`Question`) plus 3D-/Quest-Felder `theology_question_id`, `world_position`, `order`, `prerequisites`, `next_on_success`; `static from_dict()` für defensives Parsen |
+| Lade-/Parse-Logik | `game/scripts/autoload/quest_data.gd` (Autoload `QuestData`) | Liest `res://resources/quests/quest_stations.json`, baut `Array[QuestStation]`, bietet `get_station_by_id()` / `get_stations_in_order()` |
+| Referenz-/Platzhalterdaten | `game/resources/quests/quest_stations.json` | Zwei Platzhalterstationen zur Schema-Validierung — **nicht** die echten 3 theologischen Fragen (das ist Issue #15) |
+| Headless-Test | `game/tests/quest_data_test.gd` | Lädt die Daten zur Laufzeit, prüft Felder + Theologie-Verknüpfung, gibt Output aus; in `godot-validate.yml` verdrahtet |
+
+Dies konkretisiert die in Abschnitt 2.2 skizzierte `QuestionBank.gd`-Idee: Der Autoload heißt `QuestData` und liegt unter `resources/quests/` (statt `resources/questions/`), da er generische Quest-/Dialogstationen modelliert, nicht nur den Fragenkatalog. Das schmale Web-`Question`-Interface (`id`, `text`, `context`) ist als Teilmenge vollständig abgedeckt; die 3D-/Quest-Felder sind additiv und brechen kein Schema für Issue #15 (Content-Migration) oder Issue #16 (Debatten-UI).

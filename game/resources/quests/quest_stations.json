@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "note": "PLATZHALTERDATEN zur Schema-Validierung des Quest-/Dialog-Datenmodells (Issue #14). NICHT die echten theologischen Fragen — deren Übernahme ins Godot-Format ist Issue #15. Fragetexte hier sind bewusst generische Platzhalter ohne theologischen Inhalt.",
+  "stations": [
+    {
+      "id": "placeholder_intro",
+      "title": "Platzhalter-Station A",
+      "question_text": "Platzhalter-Frage A — dient nur der Modellvalidierung.",
+      "scripture_reference": "Platzhalter-Referenz A",
+      "theology_question_id": -1,
+      "world_position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+      "order": 1,
+      "prerequisites": [],
+      "next_on_success": "placeholder_second"
+    },
+    {
+      "id": "placeholder_second",
+      "title": "Platzhalter-Station B",
+      "question_text": "Platzhalter-Frage B — verweist testweise auf die Theologie-SSOT.",
+      "scripture_reference": "Platzhalter-Referenz B",
+      "theology_question_id": 1,
+      "world_position": { "x": 4.5, "y": 0.0, "z": -2.0 },
+      "order": 2,
+      "prerequisites": ["placeholder_intro"],
+      "next_on_success": ""
+    }
+  ]
+}
