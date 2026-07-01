@@ -61,15 +61,15 @@ Alle über poly.pizza verifiziert (Abruf 2026-07-01), Lizenzlink jeweils → `cr
 | Asset | Autor | Quelle |
 |---|---|---|
 | `polypizza_church_poly-by-google.glb` | Poly by Google | https://poly.pizza/m/0Oe72PEPCK6 |
-| `gothic-set/Cathedral.glb` | Bruno Oliveira | https://poly.pizza/m/fEJKTKNRAsN |
-| `gothic-set/Castle.glb` | Poly by Google | https://poly.pizza/m/aG0AF5d-zbY |
-| `gothic-set/Cemetary.glb` | Poly by Google | https://poly.pizza/m/c5L6hAdX3ua |
-| `gothic-set/Gate.glb` | Poly by Google | https://poly.pizza/m/711AlCsueib |
-| `gothic-set/Archway.glb` | Poly by Google | https://poly.pizza/m/d6lqRR2TU0i |
+| `polypizza_gothic-set/Cathedral.glb` | Bruno Oliveira | https://poly.pizza/m/fEJKTKNRAsN |
+| `polypizza_gothic-set/Castle.glb` | Poly by Google | https://poly.pizza/m/aG0AF5d-zbY |
+| `polypizza_gothic-set/Cemetary.glb` | Poly by Google | https://poly.pizza/m/c5L6hAdX3ua |
+| `polypizza_gothic-set/Gate.glb` | Poly by Google | https://poly.pizza/m/711AlCsueib |
+| `polypizza_gothic-set/Archway.glb` | Poly by Google | https://poly.pizza/m/d6lqRR2TU0i |
 
 ## QUARANTINED — Herkunft/Lizenz nicht eindeutig verifizierbar
 
-- **`gothic-set/Church.glb`** und **`gothic-set/Church (1).glb`** — `MANIFEST.md` nennt mehrere Church-Suchvarianten (`6vzTphxL9w4`, `8jSIJfw17cz`, `GHzPfvoyzX`) **ohne eindeutige Datei-zu-URL-Zuordnung**. Keine dieser konkreten Dateien konnte einer einzeln verifizierten poly.pizza-Quelle zugeordnet werden. Konservativ zurückgestellt — **nicht** verwenden, bis pro Datei die Quelle eindeutig belegt ist. (Der bereits freigegebene `polypizza_church_poly-by-google.glb` ist eine **andere**, kleinere Datei mit belegter CC-BY-Quelle.)
+- **`polypizza_gothic-set/Church.glb`** und **`polypizza_gothic-set/Church (1).glb`** — `MANIFEST.md` nennt mehrere Church-Suchvarianten (`6vzTphxL9w4`, `8jSIJfw17cz`, `GHzPfvoyzX`) **ohne eindeutige Datei-zu-URL-Zuordnung**. Keine dieser konkreten Dateien konnte einer einzeln verifizierten poly.pizza-Quelle zugeordnet werden. Konservativ zurückgestellt — **nicht** verwenden, bis pro Datei die Quelle eindeutig belegt ist. (Der bereits freigegebene `polypizza_church_poly-by-google.glb` ist eine **andere**, kleinere Datei mit belegter CC-BY-Quelle.)
 
 ## EXCLUDED — restriktiv oder nicht vorhanden
 
