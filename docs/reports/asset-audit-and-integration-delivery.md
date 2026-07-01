@@ -14,14 +14,14 @@ Belege: [`docs/assets/asset-license-audit.md`](../assets/asset-license-audit.md)
 |---|---|
 | `APPROVED` (CC0 / Public Domain) | 14 |
 | `APPROVED_WITH_ATTRIBUTION` (CC-BY 3.0) | 6 |
-| `QUARANTINED` | 2 |
-| `EXCLUDED` | 2 |
+| `QUARANTINED` | 0 |
+| `EXCLUDED` | 4 |
 | **Registereinträge gesamt** | **24** |
 
 ## 3. Quarantäne / Ausschluss (mit Begründung)
 
-- **QUARANTINED** — `polypizza_gothic-set/Church.glb`, `Church (1).glb`: mehrere poly.pizza-Church-Varianten ohne eindeutige Datei-zu-Quelle-Zuordnung; keine konnte einzeln verifiziert werden → konservativ zurückgestellt.
-- **EXCLUDED** — `oga_music/ChurchBell_ccbysa.mp3`: verifiziert **CC-BY-SA 3.0** (Share-Alike), für ein veröffentlichbares Spiel rechtlich unpassend. **Sketchfab-Monk (Inuciian, CC-BY 4.0):** nicht im Bestand vorhanden.
+- **QUARANTINED** — keine Einträge mehr (die früheren Church-Varianten wurden nach Kandidatenprüfung auf EXCLUDED gesetzt).
+- **EXCLUDED** — `polypizza_gothic-set/Church.glb`, `Church (1).glb`: Kandidatenquellen (Abruf 2026-07-01: `6vzTphxL9w4` CC-BY / `8jSIJfw17cz` CC-BY / Poly by Google, `GHzPfvoyzX` CC0 / CreativeTrio) stammen von **zwei verschiedenen Autoren/Lizenzen** ohne eindeutige Datei-zu-Quelle-Zuordnung → bei CC-BY zwingende korrekte Attribution nicht garantierbar; zudem redundant zur freigegebenen `polypizza_church_poly-by-google.glb` → **ausgeschlossen**. `oga_music/ChurchBell_ccbysa.mp3`: verifiziert **CC-BY-SA 3.0** (Share-Alike), für ein veröffentlichbares Spiel rechtlich unpassend. **Sketchfab-Monk (Inuciian, CC-BY 4.0):** nicht im Bestand vorhanden.
 
 ## 4. Lizenz- und Attributionsstrategie
 
@@ -58,7 +58,7 @@ Lokal (Godot 4.7-stable, macOS):
 
 ## 9. Nächste drei sinnvolle Issues
 
-1. **QUARANTINE auflösen:** poly.pizza-Church-Varianten pro Datei einer verifizierten Quelle zuordnen **oder** durch eine eindeutig CC0/CC-BY-Kirche ersetzen, damit ein Kirchen-Asset für Wittenberg nutzbar wird.
+1. ~~**QUARANTINE auflösen**~~ — **erledigt** (Issue #27): Church-Varianten nach Kandidatenprüfung (zwei Autoren/Lizenzen, keine eindeutige Zuordnung, redundant zur freigegebenen Church) auf `EXCLUDED` gesetzt. Ein CC-BY-Kirchen-Asset für Wittenberg steht mit `polypizza_church_poly-by-google.glb` bereits freigegeben zur Verfügung.
 2. **Mönch-/Luther-Charakter-Pipeline:** `oga_monk_cc0.blend` (CC0) nach GLB exportieren bzw. Blender-Import in Build/CI dokumentieren — oder bewusst den `Monk.obj`/einen RPG-Charakter als Luther-Platzhalter festlegen.
 3. **Wiederverwendbare Lizenz-Checkliste + optionales CI-License-Gate** (Risk Register #7): Standardprozess für künftige Asset-Packs, damit neue Assets nicht ungeprüft nach `/game` gelangen.
 
@@ -67,7 +67,7 @@ Lokal (Godot 4.7-stable, macOS):
 ### Faktenbasierte Kurzzusammenfassung
 
 - **Issue #10:** geschlossen (via PR #24) — Audit vollständig, jedes Asset entschieden, Attributionen dokumentiert.
-- **APPROVED:** 14 · **APPROVED_WITH_ATTRIBUTION:** 6 · **QUARANTINED:** 2 · **EXCLUDED:** 2.
+- **APPROVED:** 14 · **APPROVED_WITH_ATTRIBUTION:** 6 · **QUARANTINED:** 0 · **EXCLUDED:** 4.
 - **Asset-Gallery:** vorhanden (`game/scenes/dev/asset_gallery.tscn`).
 - **Testwelt:** vorhanden (`game/scenes/world/asset_integration_test_world.tscn`).
 - **Headless-Import:** exit 0, 0 ERROR; Integrationstest ALL TESTS PASSED.

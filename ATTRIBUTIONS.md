@@ -88,4 +88,4 @@ wird von den Urhebern aber begrüßt. Aus Fairness genannt:
 
 - **Church Bell** (Ulrich Metzner, OpenGameArt) — CC-BY-SA 3.0 — **ausgeschlossen** (Share-Alike).
 - **Monk Character** (Inuciian, Sketchfab) — CC-BY 4.0 — **nicht im Bestand**, ausgeschlossen.
-- **poly.pizza Church-Varianten** (`polypizza_gothic-set/Church.glb`, `polypizza_gothic-set/Church (1).glb`) — **quarantäniert** (Herkunft unklar).
+- **poly.pizza Church-Varianten** (`polypizza_gothic-set/Church.glb`, `polypizza_gothic-set/Church (1).glb`) — **ausgeschlossen** (Herkunft/Attribution nicht auflösbar, redundant): Kandidatenquellen stammen von zwei verschiedenen Autoren/Lizenzen (Poly by Google CC-BY vs. CreativeTrio CC0), eine eindeutige Datei-zu-Quelle-Zuordnung ist nicht möglich; zudem redundant zur freigegebenen `polypizza_church_poly-by-google.glb`.
