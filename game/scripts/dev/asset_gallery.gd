@@ -52,6 +52,9 @@ func _load_catalog() -> Array:
 		push_error("[gallery] Katalog fehlt: " + CATALOG_PATH)
 		return []
 	var f := FileAccess.open(CATALOG_PATH, FileAccess.READ)
+	if f == null:
+		push_error("[gallery] Fehler beim Öffnen des Katalogs: " + CATALOG_PATH)
+		return []
 	var parsed = JSON.parse_string(f.get_as_text())
 	if typeof(parsed) != TYPE_DICTIONARY or not parsed.has("assets"):
 		push_error("[gallery] Katalog ungültig oder ohne 'assets': " + CATALOG_PATH)
@@ -65,6 +68,9 @@ func _instantiate_model(path: String) -> Node3D:
 		push_error("[gallery] Ressource fehlt: " + path)
 		return null
 	var res := load(path)
+	if res == null:
+		push_error("[gallery] Ressource konnte nicht geladen werden: " + path)
+		return null
 	if res is PackedScene:
 		return (res as PackedScene).instantiate() as Node3D
 	if res is Mesh:

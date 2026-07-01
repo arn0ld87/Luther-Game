@@ -83,6 +83,7 @@ function copyObjWithDeps(srcObj, destDir) {
 function findGltfByBasenames(packDir, names) {
   const want = new Set(names.map(n => n.toLowerCase()));
   const out = [];
+  if (!fs.existsSync(packDir)) return out;
   (function walk(d){ for (const e of fs.readdirSync(d, {withFileTypes:true})) {
     const p = path.join(d, e.name);
     if (e.isDirectory()) walk(p);
@@ -136,11 +137,13 @@ console.log('[stage] Kopiere freigegebene Runtime-Assets …\n');
   for (const g of findGltfByBasenames(pack, pick)) copyGltfWithDeps(g, to);
   // Zusätzlich bis zu 4 Gebäude-/Tile-Modelle für Variety (deterministisch sortiert)
   const extra = [];
-  (function walk(d){ for (const e of fs.readdirSync(d, {withFileTypes:true})) {
-    const p = path.join(d, e.name);
-    if (e.isDirectory()) walk(p);
-    else if (/\.gltf$/i.test(e.name) && /(building|tile|hex)/i.test(p)) extra.push(p);
-  }})(pack);
+  if (fs.existsSync(pack)) {
+    (function walk(d){ for (const e of fs.readdirSync(d, {withFileTypes:true})) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/\.gltf$/i.test(e.name) && /(building|tile|hex)/i.test(p)) extra.push(p);
+    }})(pack);
+  }
   for (const g of extra.sort().slice(0, 4)) copyGltfWithDeps(g, to);
 }
 
@@ -155,11 +158,13 @@ console.log('[stage] Kopiere freigegebene Runtime-Assets …\n');
 {
   const pack = path.join(SRC, 'characters/lowpoly-rpg-characters_cc0');
   let objdir = null;
-  (function walk(d){ for (const e of fs.readdirSync(d, {withFileTypes:true})) {
-    const p = path.join(d, e.name);
-    if (e.isDirectory()) walk(p);
-    else if (/^Warrior\.obj$/i.test(e.name)) objdir = d;
-  }})(pack);
+  if (fs.existsSync(pack)) {
+    (function walk(d){ for (const e of fs.readdirSync(d, {withFileTypes:true})) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/^Warrior\.obj$/i.test(e.name)) objdir = d;
+    }})(pack);
+  }
   const to = path.join(DEST, 'third_party/opengameart/rpg-characters');
   if (objdir) for (const f of ['Warrior.obj','Cleric.obj','Wizard.obj','Monk.obj']) copyObjWithDeps(path.join(objdir, f), to);
   else { console.warn('[stage] RPG-Characters OBJ-Verzeichnis nicht gefunden'); missing++; }

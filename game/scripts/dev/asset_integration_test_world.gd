@@ -32,6 +32,9 @@ func _load_model(path: String) -> Node3D:
 		push_error("[world] Ressource fehlt: " + path)
 		return null
 	var res := load(path)
+	if res == null:
+		push_error("[world] Ressource konnte nicht geladen werden: " + path)
+		return null
 	if res is PackedScene:
 		return (res as PackedScene).instantiate() as Node3D
 	if res is Mesh:

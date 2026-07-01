@@ -18,7 +18,11 @@ func _initialize() -> void:
 	if not FileAccess.file_exists(CATALOG_PATH):
 		_fail("Katalog fehlt: " + CATALOG_PATH)
 		return
-	var parsed = JSON.parse_string(FileAccess.open(CATALOG_PATH, FileAccess.READ).get_as_text())
+	var cf := FileAccess.open(CATALOG_PATH, FileAccess.READ)
+	if cf == null:
+		_fail("Fehler beim Öffnen des Katalogs: " + CATALOG_PATH)
+		return
+	var parsed = JSON.parse_string(cf.get_as_text())
 	if typeof(parsed) != TYPE_DICTIONARY or not parsed.has("assets"):
 		_fail("Katalog ungültig")
 		return
