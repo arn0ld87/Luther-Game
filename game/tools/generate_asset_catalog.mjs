@@ -25,6 +25,7 @@ const AUDIO_EXT = /\.(ogg|mp3|wav)$/i;
 // Pack-Defaults (dir relativ zu game/assets). status immer approved/approved_with_attribution.
 const PACKS = [
   { dir: 'third_party/kenney/castle-kit',            pack: 'Kenney Castle Kit',                    license: 'CC0-1.0', attribution: false, author: 'Kenney', source: 'https://kenney.nl/assets/castle-kit', use: 'Wittenberg-Stadtmauer, Befestigungen, Belagerungsgerät' },
+  { dir: 'buildings/kenney_castle-kit',              pack: 'Kenney Castle Kit',                    license: 'CC0-1.0', attribution: false, author: 'Kenney', source: 'https://kenney.nl/assets/castle-kit', use: 'Gebäude-/Mauer-Bausteine (Stadtmauer-Prototyp)', idPrefix: 'buildings' },
   { dir: 'third_party/quaternius/medieval-village',  pack: 'Quaternius Medieval Village MegaKit',   license: 'CC0-1.0', attribution: false, author: '@Quaternius', source: 'https://quaternius.com/packs/medievalvillagemegakit.html', use: 'Modularer Stadt-/Häuseraufbau (Türen, Fenster, Treppen, Ranken)' },
   { dir: 'third_party/kaykit/medieval-hexagon',      pack: 'KayKit Medieval Hexagon Pack',         license: 'CC0-1.0', attribution: false, author: 'Kay Lousberg', source: 'https://kaylousberg.itch.io/kaykit-medieval-hexagon', use: 'Props/Tiles, zusätzliche Gebäudevarianten' },
   { dir: 'third_party/opengameart/knight',           pack: 'Quaternius Knight Character',          license: 'CC0-1.0', attribution: false, author: 'quaternius', source: 'https://opengameart.org/content/lowpoly-animated-knight', use: 'Guard-Enemy' },
@@ -69,7 +70,7 @@ for (const p of PACKS) {
     const license = ov.license || p.license;
     const attribution = ov.attribution ?? p.attribution;
     const entry = {
-      id: slug(`${p.pack}_${path.basename(rel)}`),
+      id: slug(`${p.idPrefix ? p.idPrefix + '_' : ''}${p.pack}_${path.basename(rel)}`),
       pack: p.pack,
       path: `res://assets/${rel}`,
       kind: isAudio ? 'audio' : 'model',

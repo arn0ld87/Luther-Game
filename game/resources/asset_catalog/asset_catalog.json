@@ -1,7 +1,7 @@
 {
   "generated_from": "docs/assets/asset-decision-register.csv",
   "audit": "Issue #10",
-  "count": 62,
+  "count": 63,
   "assets": [
     {
       "id": "kenney_castle_kit_bridge_straight_glb",
@@ -161,6 +161,17 @@
       "id": "kenney_castle_kit_wall_glb",
       "pack": "Kenney Castle Kit",
       "path": "res://assets/third_party/kenney/castle-kit/wall.glb",
+      "kind": "model",
+      "license": "CC0-1.0",
+      "attribution_required": false,
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/castle-kit",
+      "status": "approved"
+    },
+    {
+      "id": "buildings_kenney_castle_kit_wall_glb",
+      "pack": "Kenney Castle Kit",
+      "path": "res://assets/buildings/kenney_castle-kit/wall.glb",
       "kind": "model",
       "license": "CC0-1.0",
       "attribution_required": false,
