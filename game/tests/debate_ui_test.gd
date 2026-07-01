@@ -183,6 +183,15 @@ func _test_progress() -> bool:
 	if t2.call("get_debate_ui") != ui2:
 		return _fail("Progress: Re-Entry bei offener verlorener UI öffnete ein zweites Overlay (Leak)")
 
+	# Retry-nach-Niederlage-dann-Sieg in derselben UI: der Sieg muss die Station verbrauchen
+	# (_triggered zurück auf true), obwohl die Niederlage sie zuvor freigegeben hatte.
+	ui2.call("_reset_answer_state")
+	ui2.call("_on_answer", "nein")
+	if not bool(t2.get("_triggered")):
+		return _fail("Progress: Sieg im Retry-nach-Niederlage-Pfad ließ Station fälschlich betretbar")
+	if int(progress.call("won_count")) != 2:
+		return _fail("Progress: Retry-Sieg an Station 2 wurde nicht gezählt (won_count != 2)")
+
 	ui1.queue_free()
 	ui2.queue_free()
 	d1.queue_free()
@@ -190,5 +199,5 @@ func _test_progress() -> bool:
 	t1.queue_free()
 	t2.queue_free()
 	progress.call("reset")
-	print("PASS Progress: Sieg zählt + Station verbraucht, Niederlage wiederholbar, UI zeigt 1/3")
+	print("PASS Progress: Sieg zählt + verbraucht, Niederlage wiederholbar, Re-Entry-Schutz, Retry-Sieg verbraucht")
 	return true

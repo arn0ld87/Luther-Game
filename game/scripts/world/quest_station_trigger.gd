@@ -70,6 +70,9 @@ func _on_debate_finished(_question_id: int, won: bool) -> void:
 		var progress := get_tree().root.get_node_or_null("/root/DebateProgress")
 		if progress != null:
 			progress.call("mark_won", _question_id)
+		# Station bleibt verbraucht — explizit auch im Retry-nach-Niederlage-Pfad nötig,
+		# wo _triggered durch die vorherige Niederlage bereits auf false zurückgesetzt wurde.
+		_triggered = true
 	else:
 		_triggered = false
 
