@@ -22,6 +22,7 @@ var _result_label: Label
 var _ja_button: Button
 var _nein_button: Button
 var _again_button: Button
+var _close_button: Button
 
 
 func _ready() -> void:
@@ -88,9 +89,15 @@ func _build_ui() -> void:
 	_again_button.hide()
 	vbox.add_child(_again_button)
 
+	_close_button = Button.new()
+	_close_button.text = "Schließen"
+	_close_button.hide()
+	vbox.add_child(_close_button)
+
 	_ja_button.pressed.connect(_on_answer.bind("ja"))
 	_nein_button.pressed.connect(_on_answer.bind("nein"))
 	_again_button.pressed.connect(_reset_answer_state)
+	_close_button.pressed.connect(close_debate)
 
 
 ## Öffnet die Debatte für die gegebene Theologie-Frage-ID (aus TheologyData).
@@ -119,6 +126,7 @@ func _reset_answer_state() -> void:
 	_feedback_label.text = ""
 	_result_label.text = ""
 	_again_button.hide()
+	_close_button.hide()
 	_set_answer_buttons_enabled(true)
 
 
@@ -142,6 +150,7 @@ func _on_answer(answer: String) -> void:
 	_set_answer_buttons_enabled(false)
 	if not won:
 		_again_button.show()
+	_close_button.show()
 	debate_finished.emit(_current_question_id, won)
 
 
@@ -151,6 +160,14 @@ func show_ui() -> void:
 
 func hide_ui() -> void:
 	visible = false
+
+
+## Schließt die Debatte und entfernt die UI aus dem Szenenbaum. Der QuestStationTrigger
+## instanziiert die UI pro Betreten frisch (add_child an /root), daher wird sie hier
+## freigegeben statt nur versteckt — sonst häufen sich unsichtbare CanvasLayer an.
+func close_debate() -> void:
+	hide_ui()
+	queue_free()
 
 
 # --- Test-Hilfen (headless nachprüfbar) ---
@@ -165,3 +182,7 @@ func get_result_text() -> String:
 
 func is_finished() -> bool:
 	return _finished
+
+
+func is_close_available() -> bool:
+	return _close_button != null and _close_button.visible

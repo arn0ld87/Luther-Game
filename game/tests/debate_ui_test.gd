@@ -26,7 +26,7 @@ func _initialize() -> void:
 	if not _test_evaluator():
 		quit(1)
 		return
-	if not _test_debate_ui_win():
+	if not await _test_debate_ui_win():
 		quit(1)
 		return
 	if not _test_debate_ui_lose():
@@ -81,8 +81,13 @@ func _test_debate_ui_win() -> bool:
 		return _fail("DebateUI: 'nein' auf Frage 1 sollte SIEG ergeben")
 	if _finished_events.size() != 1 or not bool(_finished_events[0]["won"]):
 		return _fail("DebateUI: debate_finished(won=true) nicht korrekt emittiert")
-	ui.queue_free()
-	print("PASS DebateUI: Frage 1 geladen, 'nein' -> SIEG + Signal")
+	if not bool(ui.call("is_close_available")):
+		return _fail("DebateUI: Schließen-Button nach Abschluss nicht sichtbar")
+	ui.call("close_debate")
+	await process_frame
+	if is_instance_valid(ui):
+		return _fail("DebateUI: close_debate() hat die UI nicht aus dem Baum entfernt")
+	print("PASS DebateUI: Frage 1 geladen, 'nein' -> SIEG + Signal + Schließen")
 	return true
 
 
