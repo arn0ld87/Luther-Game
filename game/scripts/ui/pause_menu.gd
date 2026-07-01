@@ -23,6 +23,10 @@ signal opened()
 var _root: Control
 var _save_btn: Button
 var _load_btn: Button
+var _text_size_option: OptionButton
+var _contrast_check: CheckButton
+var _remap_buttons: Dictionary = {}  # action -> Button (zeigt aktuelle Taste)
+var _waiting_for_action := ""       # Action, deren Taste neu belegt werden soll
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -42,14 +46,29 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# Remapping-Capture hat Vorrang: wartet eine Action auf Neubelegung, fängt
+	# der nächste gedrückte Key diese ab (statt ESC/Buttons auszulösen).
+	if _waiting_for_action != "" and event is InputEventKey and event.pressed and not event.echo:
+		# ESC bricht die Neubelegung ab, statt ESC als Taste zu setzen — sonst
+		# würde ESC gleichzeitig pause-Trigger und z. B. jump-Taste (Konflikt).
+		# Direkt auf KEY_ESCAPE prüfen (Gemini-Review), nicht auf die pause-Action:
+		# hat der Spieler die Pause-Taste umbelegt, würde ESC sonst nicht abbrechen,
+		# sondern als neue Belegung für die gerade bearbeitete Action gesetzt.
+		if event.physical_keycode == KEY_ESCAPE:
+			_waiting_for_action = ""
+			_refresh_remap_labels()
+			get_viewport().set_input_as_handled()
+			return
+		if event.physical_keycode != 0:
+			_commit_remap(int(event.physical_keycode))
+			get_viewport().set_input_as_handled()
+			return
 	# ESC öffnet/schließt das Menü in BEIDEN Zuständen (ALWAYS). Konsumiert,
 	# damit kein anderer pause-Handler (z. B. ein künftiger Level-Handler)
-	# dasselbe Event doppelt verarbeitet.
+	# dasselbe Event doppelt verarbeitet. CanvasLayer hat die Methode nicht
+	# direkt → über den Viewport.
 	if event.is_action_pressed("pause") and not event.is_echo():
 		_toggle()
-		# Event konsumieren, damit kein anderer pause-Handler (z. B. ein
-		# künftiger Level-Handler) dasselbe Event doppelt verarbeitet. CanvasLayer
-		# hat die Methode nicht direkt → über den Viewport.
 		get_viewport().set_input_as_handled()
 
 
@@ -80,6 +99,14 @@ func _build_ui() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
+	# Issue #18 — Lautstärkeregler (Musik/SFX) wirken sofort beim Verschieben
+	# und werden vom AudioManager persistiert (überleben Neustart).
+	_add_volume_slider(vbox, "Musik", "music")
+	_add_volume_slider(vbox, "Effekte", "sfx")
+
+	_build_accessibility_section(vbox)
+	_build_remapping_section(vbox)
+
 	_save_btn = _add_button(vbox, "Speichern", _on_save)
 	_load_btn = _add_button(vbox, "Laden", _on_load)
 	_add_button(vbox, "Weiterspielen", _on_resume)
@@ -95,6 +122,195 @@ func _add_button(parent: Control, label: String, cb: Callable) -> Button:
 	b.pressed.connect(cb)
 	parent.add_child(b)
 	return b
+
+
+func _add_volume_slider(parent: Control, label: String, bus: String) -> void:
+	# Issue #18 — horizontaler Regler 0..1 (linear), sofort wirksam + persistiert.
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var l := Label.new()
+	l.text = label
+	l.custom_minimum_size = Vector2(80, 0)
+	row.add_child(l)
+	var s := HSlider.new()
+	s.min_value = 0.0
+	s.max_value = 1.0
+	s.step = 0.01
+	s.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var am := _save_manager_audio()
+	s.value = _audio_volume(bus, am)
+	s.value_changed.connect(func(v: float) -> void: _set_audio_volume(bus, v, am))
+	row.add_child(s)
+	parent.add_child(row)
+
+
+func _save_manager_audio() -> Node:
+	# AudioManager-Lookup (gleiche headless-robuste Pattern wie SaveManager).
+	return get_tree().root.get_node_or_null("/root/AudioManager")
+
+
+func _audio_volume(bus: String, am: Node) -> float:
+	if am == null:
+		return 1.0
+	if bus == "music":
+		return float(am.get_music_volume())
+	return float(am.get_sfx_volume())
+
+
+func _set_audio_volume(bus: String, v: float, am: Node) -> void:
+	if am == null:
+		return
+	if bus == "music":
+		am.set_music_volume(v)
+	else:
+		am.set_sfx_volume(v)
+
+
+# Spielrelevante Actions, die umbelegt werden dürfen (Sync mit
+# AccessibilityManager.MAPPABLE_ACTIONS; hier lokal, um im --script-Kontext nicht
+# vom globalen Identifier abzuhängen).
+const _MAPPABLE_ACTIONS := [
+	"move_forward", "move_back", "move_left", "move_right",
+	"jump", "interact", "pause",
+]
+
+# Textgrößen-Stufen (Index ↔ Scale), zu _build_accessibility_section synchron.
+const _TEXT_SCALES := [0.85, 1.0, 1.2, 1.5]
+
+
+func _accessibility_manager() -> Node:
+	return get_tree().root.get_node_or_null("/root/AccessibilityManager")
+
+
+func _build_accessibility_section(parent: Control) -> void:
+	var am := _accessibility_manager()
+	var heading := Label.new()
+	heading.text = "Barrierefreiheit"
+	heading.add_theme_font_size_override("font_size", 14)
+	parent.add_child(heading)
+
+	# Textgröße — OptionButton mit Stufen.
+	var ts_row := HBoxContainer.new()
+	ts_row.add_theme_constant_override("separation", 8)
+	var ts_label := Label.new()
+	ts_label.text = "Textgröße"
+	ts_label.custom_minimum_size = Vector2(80, 0)
+	ts_row.add_child(ts_label)
+	_text_size_option = OptionButton.new()
+	_text_size_option.add_item("Klein")
+	_text_size_option.add_item("Normal")
+	_text_size_option.add_item("Groß")
+	_text_size_option.add_item("Sehr groß")
+	_text_size_option.select(_text_size_index_for(am))
+	_text_size_option.item_selected.connect(_on_text_size_selected)
+	ts_row.add_child(_text_size_option)
+	parent.add_child(ts_row)
+
+	# Hoher Kontrast — Toggle.
+	_contrast_check = CheckButton.new()
+	_contrast_check.text = "Hoher Kontrast (Debatten-UI)"
+	_contrast_check.set_pressed_no_signal(am != null and bool(am.get_high_contrast()))
+	_contrast_check.toggled.connect(_on_contrast_toggled)
+	parent.add_child(_contrast_check)
+
+
+func _build_remapping_section(parent: Control) -> void:
+	var heading := Label.new()
+	heading.text = "Steuerung anpassen"
+	heading.add_theme_font_size_override("font_size", 14)
+	parent.add_child(heading)
+
+	for action in _MAPPABLE_ACTIONS:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		var l := Label.new()
+		l.text = _friendly_action_name(action)
+		l.custom_minimum_size = Vector2(140, 0)
+		row.add_child(l)
+		var b := Button.new()
+		b.custom_minimum_size = Vector2(180, 0)
+		b.pressed.connect(_on_remap_button.bind(action))
+		row.add_child(b)
+		_remap_buttons[action] = b
+		parent.add_child(row)
+	_refresh_remap_labels()
+
+
+func _refresh_remap_labels() -> void:
+	var am := _accessibility_manager()
+	for action in _remap_buttons.keys():
+		var b: Button = _remap_buttons[action]
+		if _waiting_for_action == action:
+			b.text = "Taste drücken …"
+			continue
+		var kc := _current_keycode(action, am)
+		b.text = "Taste: " + (OS.get_keycode_string(kc) if kc != 0 else "—")
+
+
+func _current_keycode(action: String, am: Node) -> int:
+	# Remap (falls gesetzt) schlägt Default.
+	if am != null:
+		var r := int(am.get_remap(action))
+		if r != 0:
+			return r
+	# Default = erste physische Taste der Action aus der InputMap.
+	if InputMap.has_action(action):
+		for e in InputMap.action_get_events(action):
+			if e is InputEventKey:
+				return int((e as InputEventKey).physical_keycode)
+	return 0
+
+
+func _on_remap_button(action: String) -> void:
+	_waiting_for_action = action
+	_refresh_remap_labels()
+
+
+func _on_text_size_selected(idx: int) -> void:
+	var am := _accessibility_manager()
+	if am != null and idx >= 0 and idx < _TEXT_SCALES.size():
+		am.set_text_scale(_TEXT_SCALES[idx])
+
+
+func _on_contrast_toggled(on: bool) -> void:
+	var am := _accessibility_manager()
+	if am != null:
+		am.set_high_contrast(on)
+
+
+func _text_size_index_for(am: Node) -> int:
+	if am == null:
+		return 1  # Normal
+	var s := float(am.get_text_scale())
+	var best := 1
+	var best_diff := 999.0
+	for i in range(_TEXT_SCALES.size()):
+		var diff := absf(_TEXT_SCALES[i] - s)
+		if diff < best_diff:
+			best_diff = diff
+			best = i
+	return best
+
+
+func _friendly_action_name(action: String) -> String:
+	var names := {
+		"move_forward": "Vorwärts",
+		"move_back": "Rückwärts",
+		"move_left": "Links",
+		"move_right": "Rechts",
+		"jump": "Springen",
+		"interact": "Interagieren",
+		"pause": "Pause",
+	}
+	return String(names.get(action, action))
+
+
+func _commit_remap(keycode: int) -> void:
+	var am := _accessibility_manager()
+	if am != null and _waiting_for_action != "":
+		am.set_remap(_waiting_for_action, keycode)
+	_waiting_for_action = ""
+	_refresh_remap_labels()
 
 
 func _toggle() -> void:

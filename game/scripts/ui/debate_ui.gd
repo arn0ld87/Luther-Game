@@ -21,6 +21,7 @@ var _question_label: Label
 var _context_label: Label
 var _feedback_label: Label
 var _result_label: Label
+var _panel: PanelContainer
 var _ja_button: Button
 var _nein_button: Button
 var _again_button: Button
@@ -41,18 +42,18 @@ func _ensure_built() -> void:
 
 
 func _build_ui() -> void:
-	var panel := PanelContainer.new()
-	panel.name = "DebatePanel"
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(560, 320)
-	add_child(panel)
+	_panel = PanelContainer.new()
+	_panel.name = "DebatePanel"
+	_panel.set_anchors_preset(Control.PRESET_CENTER)
+	_panel.custom_minimum_size = Vector2(560, 320)
+	add_child(_panel)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 16)
 	margin.add_theme_constant_override("margin_right", 16)
 	margin.add_theme_constant_override("margin_top", 16)
 	margin.add_theme_constant_override("margin_bottom", 16)
-	panel.add_child(margin)
+	_panel.add_child(margin)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 12)
@@ -117,6 +118,7 @@ func open_for_question(question_id: int) -> void:
 	_update_progress_label()
 	_reset_answer_state()
 	show_ui()
+	_apply_accessibility()
 
 
 func _get_question(question_id: int) -> Dictionary:
@@ -136,6 +138,73 @@ func _get_progress() -> Node:
 	if get_tree() == null:
 		return null
 	return get_tree().root.get_node_or_null("/root/DebateProgress")
+
+
+## AudioManager-Lookup (Issue #18) — gleiche headless-robuste Pattern wie oben.
+func _audio_manager() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().root.get_node_or_null("/root/AudioManager")
+
+
+func _play_ui_click() -> void:
+	var am := _audio_manager()
+	if am != null:
+		am.play_ui_click()
+
+
+## AccessibilityManager-Lookup (Issue #18) — headless-robuste Pattern wie oben.
+func _accessibility_manager() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().root.get_node_or_null("/root/AccessibilityManager")
+
+
+## Wendet Textgröße + Kontrast aus dem AccessibilityManager an (Issue #18).
+func _apply_accessibility() -> void:
+	if _panel == null:
+		return
+	var am := _accessibility_manager()
+	if am == null:
+		return
+	var scale := float(am.get_text_scale())
+	# Basis 16 (Godot-Default) skaliert — wirkt auf Fragentext + Feedback.
+	var fs := int(round(16.0 * scale))
+	for l in [_progress_label, _question_label, _context_label, _feedback_label, _result_label]:
+		if l != null:
+			l.add_theme_font_size_override("font_size", fs)
+
+	if bool(am.get_high_contrast()):
+		# Hoher Kontrast: schwarzes Panel, weißer Text, weißer Rand.
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color.BLACK
+		sb.border_color = Color.WHITE
+		sb.set_border_width_all(2)
+		sb.content_margin_left = 16
+		sb.content_margin_right = 16
+		sb.content_margin_top = 16
+		sb.content_margin_bottom = 16
+		_panel.add_theme_stylebox_override("panel", sb)
+		for l in [_progress_label, _question_label, _context_label, _feedback_label, _result_label]:
+			if l != null:
+				l.modulate = Color.WHITE
+	else:
+		# Defaults wiederherstellen (Toggle im laufenden Spiel unterstützen).
+		# Defensive Null-Prüfungen (Gemini-Review): die Methode kann vor
+		# vollständiger Label-Initialisierung aufgerufen werden (Testkontext);
+		# der if-Zweig prüft bereits, der else-Zweig analog.
+		if _panel != null:
+			_panel.remove_theme_stylebox_override("panel")
+		if _progress_label != null:
+			_progress_label.modulate = Color(0.7, 0.85, 1.0)
+		if _context_label != null:
+			_context_label.modulate = Color(0.8, 0.8, 0.8)
+		if _question_label != null:
+			_question_label.modulate = Color.WHITE
+		if _feedback_label != null:
+			_feedback_label.modulate = Color.WHITE
+		# _result_label.modulate wird bewusst nicht angerührt: SIEG/NIEDERLAGE
+		# färbt sich per Antwort neu (grün/rot) und würde sonst überschrieben.
 
 
 func _connect_progress() -> void:
@@ -175,6 +244,7 @@ func _set_answer_buttons_enabled(is_enabled: bool) -> void:
 
 
 func _on_answer(answer: String) -> void:
+	_play_ui_click()
 	if _finished:
 		return
 	var res := _evaluator.evaluate(_current_question_id, answer)
@@ -191,6 +261,12 @@ func _on_answer(answer: String) -> void:
 	_result_label.modulate = Color(0.3, 0.9, 0.3) if won else Color(0.9, 0.3, 0.3)
 	_finished = true
 	_set_answer_buttons_enabled(false)
+	# Issue #18 — akustisches Debattenausgang-Feedback. Das sichtbare Pendant
+	# (_result_label „SIEG"/„NIEDERLAGE") ist das Untertitel-Äquivalent für
+	# hörgeschädigte Spieler:innen (Accessibility, gleicher Informationsgehalt).
+	var am := _audio_manager()
+	if am != null:
+		am.play_debate_result(won)
 	if not won:
 		_again_button.show()
 	_close_button.show()

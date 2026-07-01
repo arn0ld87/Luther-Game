@@ -331,3 +331,36 @@ höchstens ein Spielstand; `delete_save` räumt auf.
 Node-Pfad-Lookup `get_tree().root.get_node_or_null("/root/SaveManager")` bzw. in
 `extends SceneTree`-Tests relativ `root.get_node_or_null("SaveManager")` zu — robust
 gegen beide Laufkontexte.
+
+## Audio & Accessibility (M3, Issue #18)
+
+Zwei weitere Autoloads ergänzen die M3-Ausstattung:
+
+- **`AudioManager`** — Audio-Kulisse + Lautstärkeregelung. Legt zur Laufzeit die
+  Busse `Music` und `SFX` (jeweils auf `Master` geroutet) per `AudioServer.add_bus`
+  an, statt nur den Master-Bus zu nutzen — Voraussetzung für zwei getrennte
+  Lautstärkeregler. Hintergrundmusik (`TownTheme`, geloopt) läuft auf dem Music-Bus,
+  SFX (Schritte/UI-Klick/Debattenausgang) über einen kleinen Player-Pool auf dem
+  SFX-Bus für überlappende Effekte. Lautstärke wird linear (0.0–1.0) geführt und
+  beim Anwenden nach dB gewandelt; 0.0 → -80 dB (stumm, statt -inf, sliderfreundlich).
+  Persistiert in `user://settings.json` und übersteht den Neustart.
+- **`AccessibilityManager`** — Textgröße (`text_scale`), Kontrast (`high_contrast`)
+  und Remappable Controls. Persistiert in `user://accessibility.json` (separat vom
+  Audio-File, konfliktfrei). Die InputMap-Defaults werden beim ersten Lifecycle
+  gesnapshottet (`_default_events`, guard gegen Überschreiben durch geremapte Werte),
+  sodass `reset_remap` den Projekt-Default wiederherstellen kann, den Godot selbst
+  keine API dafür anbietet. Anwendung von text_scale/Kontrast passiert verbraucherseitig
+  in der `DebateUI` (liest die Getter), die InputMap-Logik ist im Autoload zentral
+  gehalten (headless testbar).
+
+**Untertitel-Äquivalent**: der akustische Debattenausgang (SFX richtig/falsch) hat
+mit dem `SIEG`/`NIEDERLAGE`-Label ein sichtbares Pendant mit identischem
+Informationsgehalt — hörgeschädigte Spieler:innen bekommen die Information nicht
+nur akustisch, sondern auch textlich. Schritte haben keinen Informationsgehalt und
+brauchen daher kein Text-Äquivalent.
+
+**`--script`-Test-Hinweis**: Autoload-`_ready`-Callbacks laufen im
+`extends SceneTree`-Modus nicht (kein Main-Loop-Frame). `audio_test` und
+`accessibility_test` stoßen `_ready()` daher manuell an, um Bus-Setup bzw.
+Default-Snapshot + Remap-Apply auszuführen — die produktive Initialisierung
+(Autoload beim Szenen-Start) ist davon unberührt.

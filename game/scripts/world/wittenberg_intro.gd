@@ -9,7 +9,6 @@ const KENNEY := "res://assets/third_party/kenney/castle-kit/"
 const POLY := "res://assets/third_party/polypizza/"
 const KAY := "res://assets/third_party/kaykit/medieval-hexagon/"
 const OGA := "res://assets/third_party/opengameart/"
-const MUSIC := "res://assets/audio/music/TownTheme.mp3"
 const DEBATE_TRIGGER := "res://scenes/world/QuestStationTrigger.tscn"
 
 const LEVEL_SIZE := 60.0
@@ -42,7 +41,6 @@ func _ready() -> void:
 	_build_church_area()
 	_build_props()
 	_build_quest_stations()
-	_build_audio()
 	_tint_player()
 	_build_pause_menu()
 	print("[wittenberg_intro] Gebäude=%d Props=%d Kollisionskörper=%d Quest-Stationen=%d" %
@@ -387,10 +385,7 @@ func _tint_player() -> void:
 		_tint(player, "monk")
 
 func _build_audio() -> void:
-	var music := AudioStreamPlayer.new()
-	music.name = "AmbientMusic"
-	if ResourceLoader.exists(MUSIC):
-		var s := load(MUSIC)
-		if s is AudioStream:
-			music.stream = s
-	add_child(music)
+	# Issue #18 — Hintergrundmusik wird zentral vom AudioManager-Autoload auf
+	# dem Music-Bus gespielt. Diese Methode ist ein No-Op-Platzhalter, damit evtl.
+	# bestehende Aufrufer nicht brechen (kein Double-Audio mehr).
+	pass
