@@ -222,6 +222,32 @@ Für das Quest-/Dialog-Datenmodell des Godot-Spiels standen zwei native Godot-4.
 
 Dies konkretisiert die in Abschnitt 2.2 skizzierte `QuestionBank.gd`-Idee: Der Autoload heißt `QuestData` und liegt unter `resources/quests/` (statt `resources/questions/`), da er generische Quest-/Dialogstationen modelliert, nicht nur den Fragenkatalog. Das schmale Web-`Question`-Interface (`id`, `text`, `context`) ist als Teilmenge vollständig abgedeckt; die 3D-/Quest-Felder sind additiv und brechen kein Schema für Issue #15 (Content-Migration) oder Issue #16 (Debatten-UI).
 
+## 7. Single Source of Truth für theologische Fragen (M2, Issue #15, Risk #6)
+
+Risk Register Risiko 6 warnte vor **Doppelpflege** der theologischen Inhalte in zwei Formaten (TypeScript fürs Web, Godot-Format fürs Spiel). Issue #15 hatte diese Single-Source-of-Truth-Entscheidung zu treffen. Sie ist hier verbindlich getroffen — und stellt sich als bereits in M1 strukturell angelegt heraus:
+
+**Entscheidung: Eine gemeinsame JSON-Datei als einzige Datenquelle, von beiden Spielen gelesen — weder manuelle Duplikation noch Generator-Skript.**
+
+Die 3 Fragen leben ausschließlich in [`game/resources/theology/theology_questions.json`](../../game/resources/theology/theology_questions.json) (Schema: `version` + `questions[]` mit `id`, `text`, `context`). Beide Spiele konsumieren **dieselbe physische Datei**:
+
+| Konsument | Zugriffsweg |
+|---|---|
+| Web-Spiel (`/`) | `constants.ts` importiert die JSON (`import theologyQuestions from './game/resources/theology/theology_questions.json'`) und re-exportiert `export const QUESTIONS: Question[] = theologyQuestions.questions` — alle React-Konsumenten (`GameApp`, `GameContext`, `DebateInterface`) nutzen nur diese Konstante |
+| Godot-Spiel (`/game`) | Autoload `TheologyData` (`game/scripts/autoload/theology_data.gd`) lädt `res://resources/theology/theology_questions.json` zur Laufzeit |
+| Quest-Datenmodell (#14) | `QuestStation.theology_question_id` verweist per ID auf einen Fragen-Eintrag, ohne dessen Text zu duplizieren |
+
+**Warum diese Lösung — Trade-offs gegen die beiden im Issue genannten Alternativen:**
+
+- **vs. manuelle Duplikation:** Es gibt schlicht keine zweite Kopie, die auseinanderlaufen könnte. Das Drift-Risiko (Risk 6) wird nicht *gemildert*, sondern *strukturell beseitigt* — beide Spiele lesen byteweise dieselbe Datei.
+- **vs. Generator-Skript (`constants.ts` → Godot):** Ein Generator würde TypeScript als Autoren-Quelle und Godot-JSON als generiertes Derivat etablieren — mit zusätzlichem Build-Schritt und einer Cross-Toolchain-Abhängigkeit (Node-Skript erzeugt Godot-Asset). Die geteilte JSON erreicht dieselbe Ein-Quellen-Garantie ohne Build-Schritt: Die JSON ist direkt editierbar und wird von beiden Seiten gelesen. Der Generator-Vorteil (TS als Autoren-Quelle) entfällt, weil die JSON selbst die Autoren-Quelle ist.
+- **Kosten dieser Lösung:** Der Web-TS-Build importiert eine JSON, die physisch unter `/game/` liegt (`resolveJsonModule: true` in `tsconfig.json`) — eine leichte Kopplung des Web-Builds an den `game/`-Pfad. Das ist bewusst akzeptiert und funktioniert bereits.
+
+**Wo die „Wahrheit" liegt und wie Änderungen propagieren:** `theology_questions.json` ist die alleinige Wahrheit. Eine Content-Änderung dort erscheint automatisch in beiden Spielen (Web beim nächsten Build, Godot beim nächsten Lauf). Es gibt keinen Sync-Schritt.
+
+**Absicherung (maschinenprüfbar):** Das CI-Gate [`game/tools/check_theology_ssot.mjs`](../../game/tools/check_theology_ssot.mjs) (eingebunden in [`typecheck.yml`](../../.github/workflows/typecheck.yml), läuft bei jedem PR) prüft deterministisch: Struktur/Vollständigkeit der JSON, kanonische Bibelstellen-Anker (Mt 7,21 / Mt 16,18 / Röm 3,23) gegen stille Content-Änderungen, und dass `constants.ts` weiterhin aus der JSON liest statt auf eine inline hartcodierte Frageliste zurückzufallen. Damit ist eine künftige Divergenz zwischen Web und Godot nicht nur unwahrscheinlich, sondern CI-blockiert.
+
+Content-*Erweiterung* über die 3 bestehenden Fragen hinaus ist laut Roadmap explizit **kein** Teil von M2 und bleibt eigenes Backlog-Thema.
+
 ## 8. Bewertungslogik der Debatten-UI (M2, Issue #16)
 
 Für die Godot-Debatten-UI (3D-Pendant zum Web-`DebateInterface`) war laut Issue #16 die Bewertungslogik-Architektur zu entscheiden: **(a)** Wiederverwendung des bestehenden Express-Backends (`/api/check-theology`) per `HTTPRequest` vs. **(b)** eigenständige lokale GDScript-Validierung. Die Entscheidung ist hier verbindlich getroffen:
