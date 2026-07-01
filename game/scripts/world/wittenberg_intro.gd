@@ -10,21 +10,49 @@ const POLY := "res://assets/third_party/polypizza/"
 const KAY := "res://assets/third_party/kaykit/medieval-hexagon/"
 const OGA := "res://assets/third_party/opengameart/"
 const MUSIC := "res://assets/audio/music/TownTheme.mp3"
+const DEBATE_TRIGGER := "res://scenes/world/QuestStationTrigger.tscn"
 
 const LEVEL_SIZE := 60.0
 
 var building_count := 0
 var prop_count := 0
 var collision_bodies := 0
+var quest_station_count := 0
 
 func _ready() -> void:
 	_build_ground()
 	_build_walls()
 	_build_church_area()
 	_build_props()
+	_build_quest_stations()
 	_build_audio()
-	print("[wittenberg_intro] Gebäude=%d Props=%d Kollisionskörper=%d" %
-		[building_count, prop_count, collision_bodies])
+	print("[wittenberg_intro] Gebäude=%d Props=%d Kollisionskörper=%d Quest-Stationen=%d" %
+		[building_count, prop_count, collision_bodies, quest_station_count])
+
+
+func _build_quest_stations() -> void:
+	# Drei begehbare Debatten-Stationen (Issue #16) auf dem Kirchenvorplatz. Jede trägt
+	# einen sichtbaren Gesprächspartner (katalogisiertes Asset) und öffnet beim Betreten
+	# die Debatten-UI zur verknüpften Theologie-Frage (question_id_override 1/2/3).
+	# Zählt bewusst separat — bricht die M1-Zählungen (Gebäude/Props/Kollision) nicht.
+	var trigger_scene := load(DEBATE_TRIGGER) as PackedScene
+	if trigger_scene == null:
+		push_error("[wittenberg_intro] QuestStationTrigger-Szene fehlt: " + DEBATE_TRIGGER)
+		return
+	var stations := [
+		{"qid": 1, "pos": Vector3(-4, 0, -6), "npc": OGA + "rpg-characters/Cleric.obj"},
+		{"qid": 2, "pos": Vector3(0, 0, -6), "npc": OGA + "rpg-characters/Wizard.obj"},
+		{"qid": 3, "pos": Vector3(4, 0, -6), "npc": OGA + "rpg-characters/Warrior.obj"},
+	]
+	for s in stations:
+		var trigger := trigger_scene.instantiate() as QuestStationTrigger
+		trigger.question_id_override = int(s["qid"])
+		add_child(trigger)
+		trigger.position = s["pos"] as Vector3
+		var npc := _load_model(s["npc"] as String)
+		if npc != null:
+			trigger.add_child(npc)
+		quest_station_count += 1
 
 func _load_model(path: String) -> Node3D:
 	if not ResourceLoader.exists(path):

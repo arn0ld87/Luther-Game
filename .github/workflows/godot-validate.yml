@@ -97,3 +97,13 @@ jobs:
             echo "::error::Quest-Datenmodell-Test meldet ERROR-Zeilen"
             exit 1
           fi
+
+      - name: Run debate UI test (headless, fail on ERROR)
+        run: |
+          set -o pipefail
+          GODOT_BIN="$HOME/godot-editor/Godot_v${GODOT_VERSION}_linux.x86_64"
+          "$GODOT_BIN" --headless --path game --script res://tests/debate_ui_test.gd 2>&1 | tee debate_test.log
+          if grep -E "^(ERROR|SCRIPT ERROR)" debate_test.log; then
+            echo "::error::Debatten-UI-Test meldet ERROR-Zeilen"
+            exit 1
+          fi

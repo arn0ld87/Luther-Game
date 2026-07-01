@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "note": "Bewertungsdaten der Debatten-UI (Issue #16, Option b: lokale GDScript-Bewertung). Bildet die reformatorische (sola-fide-)Haltung zu den 3 bestehenden Fragen aus theology_questions.json ab — bewusst binär Ja/Nein. Enthält KEINE neuen theologischen Aussagen: Die korrekte Haltung ('nein' auf alle drei) ist die historische Kern-These der Reformation, die das Spiel ohnehin lehrt; das Feedback verweist nur auf die bereits in theology_questions.json vorhandene Bibelstelle, ohne neue Doktrin zu formulieren. Verknuepfung ueber question_id (= id in theology_questions.json).",
+  "stances": [
+    {
+      "question_id": 1,
+      "correct_answer": "nein",
+      "feedback_correct": "Das entspricht der reformatorischen Antwort. Beleg: die angezeigte Bibelstelle.",
+      "feedback_wrong": "Das war nicht die reformatorische Antwort. Beleg: die angezeigte Bibelstelle."
+    },
+    {
+      "question_id": 2,
+      "correct_answer": "nein",
+      "feedback_correct": "Das entspricht der reformatorischen Antwort. Beleg: die angezeigte Bibelstelle.",
+      "feedback_wrong": "Das war nicht die reformatorische Antwort. Beleg: die angezeigte Bibelstelle."
+    },
+    {
+      "question_id": 3,
+      "correct_answer": "nein",
+      "feedback_correct": "Das entspricht der reformatorischen Antwort. Beleg: die angezeigte Bibelstelle.",
+      "feedback_wrong": "Das war nicht die reformatorische Antwort. Beleg: die angezeigte Bibelstelle."
+    }
+  ]
+}

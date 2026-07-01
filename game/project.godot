@@ -106,3 +106,4 @@ camera_zoom_out={
 
 TheologyData="*res://scripts/autoload/theology_data.gd"
 QuestData="*res://scripts/autoload/quest_data.gd"
+DebateProgress="*res://scripts/autoload/debate_progress.gd"
