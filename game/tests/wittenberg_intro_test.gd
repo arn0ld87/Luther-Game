@@ -65,5 +65,19 @@ func _initialize() -> void:
 		return
 	print("PASS collision bodies: %d" % collision_bodies)
 
+	# Bug #1-Regressionsschutz: Spieler muss nach 1 s Physics-Simulation auf dem
+	# Boden stehen, nicht durchs Level fallen (ursprünglicher Bug: degenerierte
+	# Building-AABB überdeckte den Spawn, move_and_slide fand keinen Bodenkontakt).
+	player.global_position = Vector3(0, 2, 12)
+	player.velocity = Vector3.ZERO
+	for _i in range(60):
+		await physics_frame
+	if not player.is_on_floor() or player.global_position.y < 0.5:
+		push_error("FAIL: Spieler fällt durchs Level — y=%.3f on_floor=%s" %
+			[player.global_position.y, player.is_on_floor()])
+		quit(1)
+		return
+	print("PASS player on floor after 1s: y=%.3f" % player.global_position.y)
+
 	print("ALL TESTS PASSED")
 	quit(0)
