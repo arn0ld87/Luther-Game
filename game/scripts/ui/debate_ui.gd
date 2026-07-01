@@ -190,11 +190,19 @@ func _apply_accessibility() -> void:
 				l.modulate = Color.WHITE
 	else:
 		# Defaults wiederherstellen (Toggle im laufenden Spiel unterstützen).
-		_panel.remove_theme_stylebox_override("panel")
-		_progress_label.modulate = Color(0.7, 0.85, 1.0)
-		_context_label.modulate = Color(0.8, 0.8, 0.8)
-		_question_label.modulate = Color.WHITE
-		_feedback_label.modulate = Color.WHITE
+		# Defensive Null-Prüfungen (Gemini-Review): die Methode kann vor
+		# vollständiger Label-Initialisierung aufgerufen werden (Testkontext);
+		# der if-Zweig prüft bereits, der else-Zweig analog.
+		if _panel != null:
+			_panel.remove_theme_stylebox_override("panel")
+		if _progress_label != null:
+			_progress_label.modulate = Color(0.7, 0.85, 1.0)
+		if _context_label != null:
+			_context_label.modulate = Color(0.8, 0.8, 0.8)
+		if _question_label != null:
+			_question_label.modulate = Color.WHITE
+		if _feedback_label != null:
+			_feedback_label.modulate = Color.WHITE
 		# _result_label.modulate wird bewusst nicht angerührt: SIEG/NIEDERLAGE
 		# färbt sich per Antwort neu (grün/rot) und würde sonst überschrieben.
 

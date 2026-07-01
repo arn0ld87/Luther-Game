@@ -45,13 +45,17 @@ func _ready() -> void:
 
 
 func _snapshot_defaults() -> void:
+	# Alle Key-Belegungen je Action als Array merken (Gemini-Review: eine Action
+	# kann standardmäßig mehrere Keys haben, z. B. W + Pfeiltaste Oben für
+	# move_forward — nur der erste zu snapshotten würde die sekundären beim
+	# Reset verlieren).
 	for action in MAPPABLE_ACTIONS:
 		if InputMap.has_action(action):
-			var events := InputMap.action_get_events(action)
-			for e in events:
+			var keycodes: Array[int] = []
+			for e in InputMap.action_get_events(action):
 				if e is InputEventKey:
-					_default_events[action] = (e as InputEventKey).physical_keycode
-					break
+					keycodes.append(int((e as InputEventKey).physical_keycode))
+			_default_events[action] = keycodes
 
 
 func get_text_scale() -> float:
@@ -134,11 +138,14 @@ func _restore_default(action: String) -> void:
 	InputMap.action_erase_events(action)
 	for e in keep:
 		InputMap.action_add_event(action, e)
-	var default_kc: int = int(_default_events.get(action, 0))
-	if default_kc != 0:
-		var k := InputEventKey.new()
-		k.physical_keycode = default_kc
-		InputMap.action_add_event(action, k)
+	# Alle gesnapshotteten Default-Keys wiederherstellen (Gemini-Review: Array,
+	# nicht nur der erste — siehe _snapshot_defaults).
+	var default_kcs: Variant = _default_events.get(action, [])
+	if default_kcs is Array:
+		for default_kc in (default_kcs as Array):
+			var k := InputEventKey.new()
+			k.physical_keycode = int(default_kc)
+			InputMap.action_add_event(action, k)
 
 
 func _load_settings() -> void:
