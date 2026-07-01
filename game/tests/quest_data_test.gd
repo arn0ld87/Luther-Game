@@ -5,6 +5,12 @@ extends SceneTree
 ## generische Datenmodell laden und ausgeben lässt (Akzeptanzkriterium: tatsächlich
 ## ausgeführter Godot-Lauf mit dokumentiertem Output, nicht nur Code-Diff).
 ##
+## Zugriff bewusst über Node-Lookup (`/root/QuestData`) + `get()`/`call()` statt über
+## das globale Autoload-Identifier `QuestData`: In headless `--script`-SceneTree-Läufen
+## sind Autoload-Namen NICHT als globale Compile-Zeit-Identifier verfügbar
+## ("Identifier not found: QuestData"). Der bestehende `theology_data_test.gd` nutzt
+## dasselbe Muster aus genau diesem Grund.
+##
 ## Lauf: godot --headless --path game --script res://tests/quest_data_test.gd
 ## Erfolg = Exit-Code 0 und "ALL TESTS PASSED"; jeder Fehlschlag ruft quit(1).
 

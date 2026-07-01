@@ -24,7 +24,9 @@ func _reload() -> void:
 	stations = []
 	version = 0
 
-	if not ResourceLoader.exists(PATH):
+	# Klartext-JSON via FileAccess: file_exists() ist der korrekte Existenzcheck
+	# (ResourceLoader.exists() zielt auf importierte Godot-Ressourcen).
+	if not FileAccess.file_exists(PATH):
 		push_error("[quest_data] JSON fehlt: " + PATH)
 		return
 
@@ -33,12 +35,20 @@ func _reload() -> void:
 		push_error("[quest_data] Kann JSON nicht öffnen: " + PATH)
 		return
 
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if parsed == null or not parsed is Dictionary:
-		push_error("[quest_data] JSON nicht parsebar: " + PATH)
+	# JSON.new().parse() statt JSON.parse_string(): liefert im Fehlerfall die konkrete
+	# Fehlermeldung und Zeilennummer für einfachere Diagnose.
+	var json := JSON.new()
+	var err := json.parse(file.get_as_text())
+	if err != OK:
+		push_error("[quest_data] JSON nicht parsebar: %s (Zeile %d) in %s" % [
+			json.get_error_message(), json.get_error_line(), PATH
+		])
+		return
+	if not json.data is Dictionary:
+		push_error("[quest_data] JSON-Wurzel ist kein Dictionary: " + PATH)
 		return
 
-	var data := parsed as Dictionary
+	var data := json.data as Dictionary
 	version = int(data.get("version", 0))
 
 	var raw: Variant = data.get("stations", [])
@@ -54,6 +64,12 @@ func _reload() -> void:
 			else:
 				push_error("[quest_data] Ungültige Station übersprungen (id/Fragetext fehlt)")
 
+	# Einmalig nach `order` sortieren — die Daten sind statisch (nur bei _ready/_reload
+	# geladen), daher hier sortieren statt bei jedem get_stations_in_order()-Aufruf.
+	stations.sort_custom(func(a: QuestStation, b: QuestStation) -> bool:
+		return a.order < b.order
+	)
+
 
 ## Liefert die Station mit der gegebenen ID oder `null`, wenn keine passt.
 func get_station_by_id(id: String) -> QuestStation:
@@ -64,9 +80,6 @@ func get_station_by_id(id: String) -> QuestStation:
 
 
 ## Liefert alle Stationen nach `order` aufsteigend sortiert (stabile Kopie).
+## `stations` ist bereits in `_reload()` sortiert; hier genügt eine Kopie.
 func get_stations_in_order() -> Array[QuestStation]:
-	var sorted := stations.duplicate()
-	sorted.sort_custom(func(a: QuestStation, b: QuestStation) -> bool:
-		return a.order < b.order
-	)
-	return sorted
+	return stations.duplicate()

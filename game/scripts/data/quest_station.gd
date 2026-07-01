@@ -54,13 +54,24 @@ extends Resource
 ## so bleibt das Laden robust gegen Teil-Daten und spätere Schema-Erweiterungen.
 static func from_dict(d: Dictionary) -> QuestStation:
 	var station := QuestStation.new()
-	station.id = str(d.get("id", ""))
-	station.title = str(d.get("title", ""))
-	station.question_text = str(d.get("question_text", ""))
-	station.scripture_reference = str(d.get("scripture_reference", ""))
-	station.theology_question_id = int(d.get("theology_question_id", -1))
-	station.order = int(d.get("order", 0))
-	station.next_on_success = str(d.get("next_on_success", ""))
+
+	# Defensive Getter: ein explizites JSON-`null` (valides JSON) würde bei
+	# `str(null)` den String "null" und bei `int(null)` eine 0 liefern — beides
+	# falsch. Bei `null` daher bewusst den Default statt der Konvertierung nehmen.
+	var get_str := func(key: String, default: String) -> String:
+		var val: Variant = d.get(key)
+		return str(val) if val != null else default
+	var get_int := func(key: String, default: int) -> int:
+		var val: Variant = d.get(key)
+		return int(val) if val != null else default
+
+	station.id = get_str.call("id", "")
+	station.title = get_str.call("title", "")
+	station.question_text = get_str.call("question_text", "")
+	station.scripture_reference = get_str.call("scripture_reference", "")
+	station.theology_question_id = get_int.call("theology_question_id", -1)
+	station.order = get_int.call("order", 0)
+	station.next_on_success = get_str.call("next_on_success", "")
 
 	var pos: Variant = d.get("world_position", null)
 	if pos is Dictionary:
