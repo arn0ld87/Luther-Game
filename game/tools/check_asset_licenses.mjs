@@ -66,8 +66,10 @@ try {
   console.error(`[license-gate] FEHLER: Katalog nicht parsebar: ${err.message}`);
   process.exit(1);
 }
-const entries = Array.isArray(catalog.assets) ? catalog.assets : [];
-const cataloguedPaths = new Set(entries.map(a => String(a.path)));
+const entries = (catalog && Array.isArray(catalog.assets)) ? catalog.assets : [];
+const cataloguedPaths = new Set(
+  entries.filter(a => a && typeof a === 'object' && a.path).map(a => String(a.path))
+);
 
 // 1) Jede katalogpflichtige Datei muss im Katalog stehen.
 const onDisk = walkAssets(ASSETS).sort();
@@ -76,6 +78,7 @@ const uncatalogued = onDisk.filter(rel => !cataloguedPaths.has(toResPath(rel)));
 // 2) Warnung: Katalogeintrag, dessen Datei fehlt (kein Fehler).
 const missing = [];
 for (const a of entries) {
+  if (!a || typeof a !== 'object' || !a.path) continue;
   const p = String(a.path);
   if (!p.startsWith('res://assets/')) continue;
   const abs = path.join(ASSETS, p.slice('res://assets/'.length));
