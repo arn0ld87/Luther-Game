@@ -277,3 +277,57 @@ Für die Godot-Debatten-UI (3D-Pendant zum Web-`DebateInterface`) war laut Issue
 | Fortschritt (AK3) | `game/scripts/autoload/debate_progress.gd` (Autoload `DebateProgress`) | zählt gewonnene Stationen idempotent je Frage-ID über die kurzlebigen (`queue_free()`) UI-Instanzen hinweg; `progress_changed`-Signal speist die „X/N"-Anzeige der `DebateUI` — macht den Spielfortschritt über die 3 Stationen sichtbar |
 | Integration | `game/scripts/world/wittenberg_intro.gd` | 3 begehbare Stationen mit sichtbaren Gesprächspartnern (katalogisierte Assets Cleric/Wizard/Warrior) auf dem Kirchenvorplatz — die 3 bestehenden Fragen sind durchspielbar |
 | Test | `game/tests/debate_ui_test.gd` | headless: Evaluator (3 Fragen), UI-Sieg/Niederlage + Signal, Schließen-Button über echten Signal-Pfad, Trigger öffnet Debatte, Fortschritt (Sieg zählt + Station verbraucht, Niederlage wiederholbar, „X/N"-Anzeige) |
+
+## Save/Load (M3, Issue #17)
+
+Persistenz eines einzelnen Spielstands unter `user://save.json`, gekapselt im
+`SaveManager`-Autoload. Gespeichert werden Spielerposition (`Vector3` + `rotation_y`),
+der Debattenfortschritt (`DebateProgress.to_dict()` → `won_ids: Array[int]`) und ein
+ISO-Zeitstempel; ein `save_version`-Feld schützt vor stiller Schema-Drift bei künftigen
+Migrationsbedarfen (Akzeptanzkriterium 7).
+
+| Baustein | Datei | Rolle |
+|---|---|---|
+| Persistenz (Autoload) | `game/scripts/autoload/save_manager.gd` (Autoload `SaveManager`) | `save_game`/`load_game`/`has_save`/`get_save_timestamp`/`delete_save`; JSON via `FileAccess`; definierter Fallback bei fehlender/korrupter Datei (leeres Dictionary + `push_warning`, kein Crash) |
+| Fortschritt-Schnitt | `game/scripts/autoload/debate_progress.gd` | `to_dict()`/`from_dict()` für die Serialisierung der `won_ids` — keine zweite Repräsentation des Fortschritts (Single-Source) |
+| UI-Anbindung | `game/scripts/ui/pause_menu.gd` (`class_name PauseMenu`) | Code-generiertes Pause-Menü (CanvasLayer, `process_mode=ALWAYS`); entkoppelt über Signale `save_requested`/`load_requested`/`resume_requested`/`quit_requested` |
+| Integration | `game/scripts/world/wittenberg_intro.gd` | verdrahtet Pause-Menü + Quick-Save/Load (F5/F9); `_on_save`/`_on_load` übersetzen zwischen UI-Signalen, Player-Position und den Autoloads |
+| Test | `game/tests/save_load_test.gd` | headless: Save→Load Roundtrip (Position/Fortschritt/Version/Zeitstempel), `DebateProgress`-Roundtrip + idempotent `mark_won`, korrupte + fehlende Datei → Fallback ohne Crash |
+
+### Format-Entscheidung: JSON via FileAccess statt binärer Godot-Resource
+
+Zwei gängige Wege standen zur Wahl (Issue #17): eine eigene `Resource`-Subklasse mit
+`ResourceSaver`/`ResourceLoader` (binär, kompakt) oder `FileAccess` + `JSON.stringify`/
+`JSON.parse_string` (menschenlesbar). **Entschieden für JSON via FileAccess**:
+
+- **Debugging & Support**: ein Spielstand, den man in einem Texteditor öffnen und lesen
+  kann, macht Support-Fälle („mein Spielstand ist weg") trivial diagnostizierbar. Eine
+  binäre Resource erfordert den Editor oder ein Skript zum Inspectieren.
+- **Schema-Drift-Beherrschung**: das `save_version`-Feld ist im JSON direkt sichtbar;
+  künftige Migrationen können gezielt auf Versionen verzweigen, ohne eine binäre Form
+  parsen zu müssen.
+- **Robustheit bei korrupten Dateien**: fehlerhaftes JSON liefert ein sauberes
+  Parse-Ergebnis (leer/null), das als „kein Spielstand" interpretiert wird — eine
+  halb geschriebene binäre Resource kann hingegen inkonsistente Teilzustände ergeben.
+- **Performance/Größe vernachlässigbar**: ein Lernspiel-Spielstand ist wenige KB
+  (Position + ≤ 3 gewonnene IDs + Zeitstempel). Der Größen-/Geschwindigkeitsnachteil
+  gegenüber Binär-Serialisierung ist bei dieser Datenmenge nicht messbar.
+
+**Trade-off bewusst akzeptiert**: JSON ist manipulierbar (User kann den Spielstand
+editieren) — für ein Lernspiel ohne Wettkampfaspekt ohne Bedeutung (Issue-Non-Goal:
+keine Verschlüsselung / kein Anti-Cheat). JSON speichert ints als ints, der Roundtrip
+über `JSON.parse_string` liefert jedoch numbers als float zurück; der konsumierende
+Code castet daher konsequent über `int()`/`float()` (siehe `DebateProgress.from_dict`,
+`wittenberg_intro._on_load`) — keine impliziten Typ-Annahmen auf den geladenen Werten.
+
+**Pfadkonvention**: `user://save.json` — Godot löst `user://` plattformabhängig auf
+(macOS: `~/Library/Application Support/Godot/app_userdata/<project>/`), kein
+manuelles Pfad-Handling. Single-Save (Non-Goal: keine Multi-Slots), persistiert ist
+höchstens ein Spielstand; `delete_save` räumt auf.
+
+**Autoload-Zugriff in headless Tests**: die globalen Autoload-Identifier
+(`SaveManager`, `DebateProgress`) sind in `--script`-Läufen nicht garantiert verfügbar
+(siehe etablierte Pattern in `debate_ui.gd`); produktive Skripte und Tests greifen per
+Node-Pfad-Lookup `get_tree().root.get_node_or_null("/root/SaveManager")` bzw. in
+`extends SceneTree`-Tests relativ `root.get_node_or_null("SaveManager")` zu — robust
+gegen beide Laufkontexte.

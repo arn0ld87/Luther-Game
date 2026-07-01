@@ -34,6 +34,8 @@ var prop_count := 0
 var collision_bodies := 0
 var quest_station_count := 0
 
+var _pause_menu: PauseMenu
+
 func _ready() -> void:
 	_build_ground()
 	_build_walls()
@@ -42,8 +44,107 @@ func _ready() -> void:
 	_build_quest_stations()
 	_build_audio()
 	_tint_player()
+	_build_pause_menu()
 	print("[wittenberg_intro] Gebäude=%d Props=%d Kollisionskörper=%d Quest-Stationen=%d" %
 		[building_count, prop_count, collision_bodies, quest_station_count])
+
+
+func _build_pause_menu() -> void:
+	# Issue #17 AK5 — Pause-Menü als Spiel-UI für Save/Load. Entkoppelt über Signals.
+	var p := PauseMenu.new()
+	p.save_requested.connect(_on_save)
+	p.load_requested.connect(_on_load)
+	p.resume_requested.connect(_on_resume)
+	p.quit_requested.connect(_on_quit)
+	add_child(p)
+	_pause_menu = p
+
+
+func _input(event: InputEvent) -> void:
+	# Pause-Menü (ESC): friert die Welt ein, Menü läuft weiter (process_mode ALWAYS).
+	if event.is_action_pressed("pause") and not event.is_echo():
+		var opening := not _pause_menu.is_open()
+		_pause_menu.toggle()
+		get_tree().paused = _pause_menu.is_open()
+		if opening:
+			_pause_menu.set_can_save(_player() != null)
+	# Quick-Save/Load (F5/F9) — Convenience neben dem Pause-Menü, auch in laufendem Spiel.
+	if event.is_action_pressed("quick_save") and not event.is_echo():
+		_on_save()
+	if event.is_action_pressed("quick_load") and not event.is_echo():
+		_on_load()
+
+
+func _player() -> CharacterBody3D:
+	return get_node_or_null("Player") as CharacterBody3D
+
+
+func _on_save() -> void:
+	# Issue #17 — Spielstand persistieren (Position + Debattenfortschritt).
+	var player := _player()
+	if player == null:
+		push_warning("[wittenberg_intro] Speichern abgebrochen — kein Player")
+		return
+	var dp := _debate_progress()
+	if dp == null:
+		push_error("[wittenberg_intro] Speichern abgebrochen — DebateProgress fehlt")
+		return
+	var sm := _save_manager()
+	if sm == null:
+		push_error("[wittenberg_intro] Speichern abgebrochen — SaveManager fehlt")
+		return
+	var won_ids: Array = (dp.to_dict() as Dictionary).get("won_ids", [])
+	var ok: bool = sm.save_game(player.global_position, player.rotation.y, won_ids)
+	if ok:
+		print("[wittenberg_intro] Spielstand gespeichert: %s (Debatten: %d)" %
+			[sm.get_save_timestamp(), dp.won_count()])
+	else:
+		push_error("[wittenberg_intro] Speichern fehlgeschlagen")
+
+
+func _on_load() -> void:
+	# Issue #17 — Spielstand wiederherstellen. Leeres Dictionary = kein/korrupter
+	# Save → definierter Fallback (kein Crash, nur Meldung).
+	var sm := _save_manager()
+	if sm == null:
+		push_error("[wittenberg_intro] Laden abgebrochen — SaveManager fehlt")
+		return
+	var state: Dictionary = sm.load_game()
+	if state.is_empty():
+		print("[wittenberg_intro] Kein Spielstand zum Laden")
+		return
+	var player := _player()
+	if player != null:
+		var p: Dictionary = state.get("player", {})
+		player.global_position = Vector3(
+			float(p.get("x", 0.0)), float(p.get("y", 1.0)), float(p.get("z", 12.0)))
+		player.rotation.y = float(p.get("rotation_y", 0.0))
+		# Velocity zurücksetzen, damit der geladene Player nicht aus alter Bewegung
+		# weiterfliegt, bevor die Physik den neuen Bodenkontakt findet.
+		player.velocity = Vector3.ZERO
+	var dp := _debate_progress()
+	if dp != null:
+		dp.from_dict(state.get("debate", {}))
+		print("[wittenberg_intro] Spielstand geladen (Debatten: %d)" % dp.won_count())
+
+
+## Autoload-Lookups per Node-Pfad (headless-robust, siehe debate_ui.gd) — die
+## globalen Identifier SaveManager/DebateProgress sind in --script-Läufen nicht
+## garantiert verfügbar.
+func _save_manager() -> Node:
+	return get_tree().root.get_node_or_null("/root/SaveManager")
+
+
+func _debate_progress() -> Node:
+	return get_tree().root.get_node_or_null("/root/DebateProgress")
+
+
+func _on_resume() -> void:
+	get_tree().paused = false
+
+
+func _on_quit() -> void:
+	get_tree().quit()
 
 
 func _build_quest_stations() -> void:

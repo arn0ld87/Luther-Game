@@ -40,3 +40,21 @@ func is_won(question_id: int) -> bool:
 func reset() -> void:
 	_won_ids.clear()
 	progress_changed.emit(0, TOTAL_STATIONS)
+
+
+## Serialisiert den Fortschritt für SaveManager (Issue #17). `won_ids` als
+## Array statt Dictionary-Keys, damit das JSON-Format stabil und lesbar bleibt
+## (Dictionary mit int-Keys würde in Godots JSON zu String-Keys).
+func to_dict() -> Dictionary:
+	return {"won_ids": _won_ids.keys()}
+
+
+## Stellt den Fortschritt aus einem Save wieder her. Idempotent mit reset,
+## damit keine Reste eines alten Spielstands hängen bleiben. Emitiert
+## progress_changed, damit die UI („X/N") sofort den geladenen Stand zeigt.
+func from_dict(d: Dictionary) -> void:
+	_won_ids.clear()
+	var ids: Array = d.get("won_ids", [])
+	for id in ids:
+		_won_ids[int(id)] = true
+	progress_changed.emit(won_count(), TOTAL_STATIONS)
