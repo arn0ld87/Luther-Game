@@ -49,6 +49,13 @@ func _input(event: InputEvent) -> void:
 	# Remapping-Capture hat Vorrang: wartet eine Action auf Neubelegung, fängt
 	# der nächste gedrückte Key diese ab (statt ESC/Buttons auszulösen).
 	if _waiting_for_action != "" and event is InputEventKey and event.pressed and not event.echo:
+		# ESC bricht die Neubelegung ab, statt ESC als Taste zu setzen — sonst
+		# würde ESC gleichzeitig pause-Trigger und z. B. jump-Taste (Konflikt).
+		if event.is_action_pressed("pause"):
+			_waiting_for_action = ""
+			_refresh_remap_labels()
+			get_viewport().set_input_as_handled()
+			return
 		if event.physical_keycode != 0:
 			_commit_remap(int(event.physical_keycode))
 			get_viewport().set_input_as_handled()
