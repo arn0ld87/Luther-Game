@@ -127,6 +127,12 @@ func _linear_to_db(v: float) -> float:
 
 
 func play_sfx(path: String) -> void:
+	# Headless (CI-Tests, --script): keine Wiedergabe — play() erzeugt einen
+	# AudioStreamPlayback, der beim Test-quit nicht sauber freigegeben wird und
+	# die Stream-Ressource hält ("resources still in use at exit", CI greift das
+	# als ERROR). Im headless ist ohnehin keine Audio-Ausgabe nötig.
+	if _is_headless():
+		return
 	if _sfx_pool.is_empty():
 		_ensure_sfx_pool()
 	if not ResourceLoader.exists(path):
