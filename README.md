@@ -109,7 +109,9 @@ Die Zustände sind als `GameState`-Enum in `types.ts` definiert. Das 2D-Renderin
 
 ## Godot-Migration
 
-Der Web-Prototyp bleibt als Referenz erhalten; das eigentliche Ziel ist ein Desktop-Spiel unter `game/` mit Godot 4.7-stable (Forward+ Renderer, Hauptszene `res://scenes/bootstrap.tscn`). Meilenstein **M0** (Bootstrap-Stage) ist abgeschlossen; **M1** ist mit dem Spielercharakter-Controller (`scenes/Player.tscn`, `scripts/entities/Player.gd` — `move_and_slide()`-Bewegung, Gravitation, Bodenkollision) als erstem Schritt in Arbeit. Kamera-Rig und konfigurierbares Input-Mapping (aktuell hartcodierte WASD-Tasten) folgen noch.
+Der Web-Prototyp bleibt als Referenz erhalten; das eigentliche Ziel ist ein Desktop-Spiel unter `game/` mit Godot 4.7-stable (Forward+ Renderer). Meilensteine **M0** (Bootstrap-Stage), **M1** (Spielercharakter, Kamera-Rig, konfigurierbares Input-Mapping) und **M2** (Quest-/Dialog-/Debattensystem mit Theologie-SSOT) sind abgeschlossen (PRs #36, #37, #38, #39). Mit `world/wittenberg_intro.tscn` existiert das erste echte Level (Kirchenvorplatz, Schlosskirche, Stadtmauer, drei begehbare Quest-Stationen mit Debatten-UI) — es ist die Hauptszene (`run/main_scene`, PR #40); `bootstrap.tscn` bleibt als Dev-Blockout/Testszene erhalten. Aktueller Fokus: M3 (Save/Load, Issue #17; Audio/Accessibility, Issue #18).
+
+Assets: 63 kuratierte Einträge aus dem `godot_assets/`-Staging sind lizenzgeprüft nach `game/assets/` integriert (Gebäude, Props, Charaktere, Audio) und im Asset-Katalog (`game/resources/asset_catalog/asset_catalog.json`) erfasst — Details in [`docs/assets/`](./docs/assets/).
 
 **Godot-Editor nicht im Repo** — jede Person lädt ihn selbst herunter und verifiziert den SHA512-Hash gegen die Release-SUMS (siehe [`game/README.md`](./game/README.md)). GitHub-Validierung läuft über [`.github/workflows/godot-validate.yml`](./.github/workflows/godot-validate.yml).
 
@@ -187,19 +189,18 @@ Express-Server in `server.ts`, jede Route try/catch mit gültigem Fallback-Objek
 
 - Keine formelle Test-Suite — Verifikation erfolgt via `npm run build` und manuellem Spieltest (Browser-Konsole prüfen).
 - Der Web-Prototyp ist 2D, kein 3D/R3F — ältere Doku, die von Three.js spricht, ist veraltet.
-- Die Godot-Migration: M0 (Bootstrap-Stage) ist abgeschlossen, M1 (Spielercharakter) ist in Arbeit; noch kein vollständiger Vertical Slice.
+- Die Godot-Migration: M0–M2 sind abgeschlossen (Bootstrap, Spielercharakter/Kamera/Steuerung, Quest-/Debattensystem); M3 (Save/Load, Audio/Accessibility) steht noch aus — noch kein vollständiger Vertical Slice bis Release (M4).
 - Theologische Inhalte sind pädagogisch kuratiert, ersetzen aber keine akademische oder seelsorgerliche Expertise.
 
 ## Entwicklungsstatus
 
-**v1.0.0** — Web-Prototyp spielbar (2D), Godot-Migration: M0 (Bootstrap-Stage) abgeschlossen, M1 (Spielercharakter mit Bewegung/Kollision) in Arbeit.
+**v1.0.0** — Web-Prototyp spielbar (2D), Godot-Migration: M0–M2 abgeschlossen (Bootstrap, Spielercharakter + Kamera + Input-Mapping, Quest-/Debattensystem mit Theologie-SSOT und begehbaren Quest-Stationen im Wittenberg-Level).
 
-**Aktueller Fokus:**
+**Aktueller Fokus (M3):**
 
-- M1 fortsetzen: Kamera-Rig und konfigurierbares Input-Mapping (Player-Controller mit Bewegung/Gravitation/Kollision steht bereits)
-- Quest-/Dialog-/Debatte-Systeme für den Godot-Teil planen
-- Veraltete 3D-Referenzen aus Doku und Metadaten entfernen
-- Build-Verifikation & GitHub-Workflow für den Godot-Teil stabilisieren
+- Issue #17: Save/Load-System für den Spielstand
+- Issue #18: Audio- und Accessibility-Grundausstattung
+- Mönch-Visual-Feinschliff (Ausrichtung/Scale) und selektiver Nachzug weiterer Assets aus dem `godot_assets/`-Staging bei Levelausbau
 
 ## Mitarbeiten
 

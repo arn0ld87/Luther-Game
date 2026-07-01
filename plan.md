@@ -1,5 +1,7 @@
 # Sola Fide: The Luther Run — Godot-Migration, Phase 0–2 (Stage A + B), Godot-Fundament als Folge-Schritt
 
+> **Stand 2026-07-01:** Alle hier geplanten Stages sind abgeschlossen (Stage A/B/C ✅, Meilensteine M0–M2 ✅). Dieses Dokument ist Archiv/historischer Planungsstand aus der Migrationsanlaufphase, nicht mehr Quelle der Wahrheit. Aktuelle Planung: [`docs/planning/roadmap.md`](./docs/planning/roadmap.md); aktueller Projektzustand: [`HANDOFF.md`](./HANDOFF.md).
+
 ## Context
 
 Der Auftrag verlangt den Aufbau eines echten, spielbaren 3D-Desktop-Spiels in Godot 4.x unter `/game`, gestützt auf Audit, ADR, vollständige Produkt-/Architekturdoku und einen GitHub-Backlog. Das Repo wurde zur Verifikation direkt geprüft (nicht nur das Draft übernommen):
