@@ -12,10 +12,10 @@ Diese Dokumentation beschreibt die in Godot definierten Input-Actions für "Sola
 | `move_right` | Rechtsbewegung | `D`, `Right Arrow` | `Left Stick Right` (Axis 0+) |
 | `interact` | Interaktion / Bestätigen | `E` | `Button A` (Button 0) |
 | `pause` | Menü / Pause | `Escape` | `Start` (Button 6) |
-| `look_left` | Kamera nach links drehen | - | `Right Stick Left` (Axis 2-) |
-| `look_right` | Kamera nach rechts drehen | - | `Right Stick Right` (Axis 2+) |
-| `look_up` | Kamera nach oben neigen | - | `Right Stick Up` (Axis 3-) |
-| `look_down` | Kamera nach unten neigen | - | `Right Stick Down` (Axis 3+) |
+| `look_left` | Kamera nach links drehen | `←` | `Right Stick Left` (Axis 2-) |
+| `look_right` | Kamera nach rechts drehen | `→` | `Right Stick Right` (Axis 2+) |
+| `look_up` | Kamera nach oben neigen | `↑` | `Right Stick Up` (Axis 3-) |
+| `look_down` | Kamera nach unten neigen | `↓` | `Right Stick Down` (Axis 3+) |
 | `camera_zoom_in` | Kamera-Zoom heran | `Mouse Wheel Up` | - |
 | `camera_zoom_out` | Kamera-Zoom weg | `Mouse Wheel Down` | - |
 
@@ -39,4 +39,14 @@ if Input.is_action_just_pressed("interact"):
 if Input.is_action_just_pressed("pause"):
     # Pause-Menü öffnen
     pass
+```
+
+### Kamera (Orbit & Zoom)
+Die Kamera-Aktionen werden in `CameraRig.gd` verarbeitet:
+```gdscript
+# Look-Around: Input.get_vector mit look_left/right/up/down liefert einen
+# normalisierten Vektor; pitch/yaw speed werden per Export im Rig konfiguriert.
+
+# Zoom: Mausrad-Impulse (camera_zoom_in / camera_zoom_out) verändern die
+# SpringArm-Länge zwischen zoom_min und zoom_max.
 ```

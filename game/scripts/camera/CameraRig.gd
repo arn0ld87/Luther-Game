@@ -3,10 +3,10 @@ extends Node3D
 ## Issue #12 — Third-Person-Kamera-Rig. Folgt `target` per Lerp/Smoothing
 ## (kein 1:1-Parenting) und vermeidet Wand-/Gebäude-Clipping über den
 ## Shape-Cast des SpringArm3D-Kindknotens. Liefert rotate_yaw()/rotate_pitch()
-## als input-quellenunabhängige öffentliche API für den Orbit; verdrahtet
-## bewusst KEINEN Input-Listener (kein _unhandled_input) — das konkrete
-## Anbinden einer Eingabequelle (Maus/Stick/Tastatur) an diese API ist
-## explizit Issue #13 (Konfigurierbares Input-Mapping) vorbehalten.
+## als input-quellenunabhängige öffentliche API für den Orbit.
+##
+## Issue #13 — Verarbeitung der Input-Map Actions `look_*` (Right Stick /
+## Pfeiltasten) und `camera_zoom_*` (Mausrad) in _unhandled_input().
 
 @export var target: CharacterBody3D:
 	set(value):
@@ -55,6 +55,11 @@ extends Node3D
 @export var initial_pitch_deg: float = -15.0
 @export var pitch_min_deg: float = -40.0
 @export var pitch_max_deg: float = 60.0
+@export var yaw_speed_deg_per_sec: float = 120.0
+@export var pitch_speed_deg_per_sec: float = 90.0
+@export var zoom_step: float = 0.5
+@export var zoom_min: float = 1.5
+@export var zoom_max: float = 8.0
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
@@ -96,6 +101,13 @@ func _ready() -> void:
 	# Erstes Frame ohne Smoothing direkt auf die Zielfigur springen.
 	global_position = target.global_position + Vector3.UP * pivot_height
 
+func _unhandled_input(event: InputEvent) -> void:
+	# Mausrad-Zoom ist ein Impuls (is_action_just_released), keine Stärke.
+	if event.is_action_pressed("camera_zoom_in"):
+		_set_zoom(spring_length - zoom_step)
+	elif event.is_action_pressed("camera_zoom_out"):
+		_set_zoom(spring_length + zoom_step)
+
 func _physics_process(delta: float) -> void:
 	if not is_instance_valid(target):
 		# Ziel zur Laufzeit ungültig geworden: Verarbeitung ganz abschalten
@@ -103,6 +115,16 @@ func _physics_process(delta: float) -> void:
 		set_physics_process(false)
 		return
 
+	var look_vector := Input.get_vector("look_left", "look_right", "look_up", "look_down")
+	if look_vector.length_squared() > 0.0:
+		rotate_yaw(deg_to_rad(look_vector.x * yaw_speed_deg_per_sec * delta))
+		rotate_pitch(deg_to_rad(-look_vector.y * pitch_speed_deg_per_sec * delta))
+
 	var desired_position: Vector3 = target.global_position + Vector3.UP * pivot_height
 	var factor: float = clampf(1.0 - exp(-position_smoothing * delta), 0.0, 1.0)
 	global_position = global_position.lerp(desired_position, factor)
+
+func _set_zoom(value: float) -> void:
+	spring_length = clampf(value, zoom_min, zoom_max)
+	if is_node_ready():
+		spring_arm.spring_length = spring_length
