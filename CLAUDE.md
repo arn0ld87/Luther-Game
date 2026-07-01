@@ -12,7 +12,8 @@ Active migration: the web prototype is being replaced by a Godot 4.7 desktop eng
 
 - `npm run dev` — Vite dev server (localhost:5173), proxies `/api/*` to the backend
 - `npm run server` — Express backend (localhost:3000); run both together, frontend alone can't validate theology answers
-- `npm run build` — production build, **must pass with zero TS errors**
+- `npm run typecheck` — full TypeScript type check (run this to ensure type safety)
+- `npm run build` — production build (transpilation only, use `typecheck` for full validation)
 - `npm run preview` — preview production build
 - No test suite configured — verification is build + manual run, see Workflow below
 - Godot editor (not committed): `./Godot.app/Contents/MacOS/Godot --path game` (GUI) or `--headless --path game --quit` (CI/scripts). See `game/README.md` for download + SHA512 verification.
@@ -41,7 +42,7 @@ Active migration: the web prototype is being replaced by a Godot 4.7 desktop eng
 
 ## Workflow
 
-- Before claiming a change works: `npm run build` must succeed, then run both dev servers and check the browser console
+- Before claiming a change works: `npm run typecheck` and `npm run build` must succeed, then run both dev servers and check the browser console
 - Minimal diffs for small fixes — no drive-by refactors of unrelated components
 - New top-level UI goes inside an `ErrorBoundary`
 - For larger interventions (new subsystems, larger refactors, multi-file architecture changes): run an additional review pass with the Opus model over the diff before opening the PR
