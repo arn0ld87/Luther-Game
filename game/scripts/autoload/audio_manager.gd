@@ -74,9 +74,18 @@ func _start_music() -> void:
 			_music.stream = s
 	add_child(_music)
 	# play() braucht den Baum (im --script-Test ohne Main-Loop ist der Player
-	# ggf. noch nicht verbunden) — nur spielen, wenn wirklich eingehängt.
-	if _music.is_inside_tree():
+	# ggf. noch nicht verbunden) — nur spielen, wenn wirklich eingehängt. Im
+	# headless-Modus (CI-Tests, --script) KEIN play(): der erzeugte
+	# AudioStreamPlaybackMP3 wird beim Test-quit nicht sauber freigegeben und
+	# hält die TownTheme-Ressource → "resources still in use at exit", was der
+	# CI-Import-Check als ERROR greift. Busse/Stream werden dennoch angelegt
+	# (für audio_test), nur die Wiedergabe entfällt.
+	if _music.is_inside_tree() and not _is_headless():
 		_music.play()
+
+
+func _is_headless() -> bool:
+	return DisplayServer.get_name() == "headless"
 
 
 func set_music_volume(linear: float) -> void:
