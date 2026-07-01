@@ -68,11 +68,14 @@ func _initialize() -> void:
 	# Bug #1-Regressionsschutz: Spieler muss nach 1 s Physics-Simulation auf dem
 	# Boden stehen, nicht durchs Level fallen (ursprünglicher Bug: degenerierte
 	# Building-AABB überdeckte den Spawn, move_and_slide fand keinen Bodenkontakt).
+	# 60 physics_frame = 1 s bei Godot-Default 60 Hz physics tick.
+	# Capsule (height=1.8, radius=0.4) auf Ground-Top y=0 → Player-Origin y≈0.9;
+	# Schwelle 0.7 fängt „komplett durchgefallen" UND „im Boden versackt" ab.
 	player.global_position = Vector3(0, 2, 12)
 	player.velocity = Vector3.ZERO
 	for _i in range(60):
 		await physics_frame
-	if not player.is_on_floor() or player.global_position.y < 0.5:
+	if not player.is_on_floor() or player.global_position.y < 0.7:
 		push_error("FAIL: Spieler fällt durchs Level — y=%.3f on_floor=%s" %
 			[player.global_position.y, player.is_on_floor()])
 		quit(1)

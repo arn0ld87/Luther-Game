@@ -83,6 +83,13 @@ func _tint(model: Node3D, palette_key: String) -> void:
 		var mi := child as MeshInstance3D
 		if mi.mesh == null:
 			continue
+		# Surface-Reihenfolge muss zur Palette passen (siehe Kommentar am NPC_COLORS-Block):
+		# OBJ/MTL-Re-Exports können die Materialreihenfolge ändern → stille Fehlfärbung.
+		# Warnung macht das beim Asset-Update sichtbar; Modulo-Wrap ist Fallback.
+		var sc := mi.mesh.get_surface_count()
+		if colors.size() > 1 and sc != colors.size():
+			push_warning("[wittenberg_intro] %s: %d Surfaces, Palette '%s' hat %d Farben — Indizes prüfen" %
+				[model.name, sc, palette_key, colors.size()])
 		for s in mi.mesh.get_surface_count():
 			var mat := StandardMaterial3D.new()
 			mat.albedo_color = colors[s % colors.size()]
@@ -134,7 +141,10 @@ func _add_box_collision(model: Node3D) -> void:
 			continue
 		var mdt := MeshDataTool.new()
 		for s in range(m.mesh.get_surface_count()):
-			mdt.create_from_surface(m.mesh, s)
+			if mdt.create_from_surface(m.mesh, s) != OK:
+				push_warning("[wittenberg_intro] create_from_surface fehlgeschlagen: %s surface %d" %
+					[m.name, s])
+				continue
 			for v in range(mdt.get_vertex_count()):
 				var world_p := m.global_transform * mdt.get_vertex(v)
 				if world_p.y < 0.0 or world_p.y > MAX_HEIGHT:
