@@ -1,14 +1,14 @@
 # Roadmap: Godot-3D-Desktop-Spiel (`/game`)
 
-- Status: Entwurf
-- Datum: 2026-06-30
+- Status: M0–M2 abgeschlossen, M3 aktueller Meilenstein
+- Datum: 2026-06-30, aktualisiert 2026-07-01
 - Bezug: [ADR 001 – Godot 4.x als Desktop-Engine](../architecture/adr/001-godot-desktop-engine.md), [Repository-Audit](../00-discovery/repository-audit.md)
 
 ## Zweck dieses Dokuments
 
 Diese Roadmap konkretisiert den in ADR 001 skizzierten Migrationsplan (Stage C ff.) zu fünf Meilensteinen M0–M4. Sie ist die Detaillierung von "Stage C: `/game`-Projektgrundgerüst" und den darauf folgenden Folge-Sessions aus der ADR. Jeder Meilenstein wird in einem eigenen Branch/PR umgesetzt (kein Sammel-PR über mehrere Meilensteine).
 
-**Wichtig — Geltungsbereich dieser Sitzung:** Nur **M0** (= Stage C) ist Gegenstand der aktuellen Arbeitssitzung und wird ggf. im direkten Anschluss begonnen. **M1 bis M4 sind explizit NICHT Teil der aktuellen Sitzung** — sie sind Planungsgegenstand für künftige, separate Sessions/Branches/PRs auf Basis der in Stage B angelegten GitHub-Issues. Diese Roadmap dient als verbindlicher Rahmen für diese Folge-Sessions, nicht als Arbeitsauftrag für jetzt.
+**Stand 2026-07-01:** M0, M1 und M2 sind abgeschlossen. **M3** (Save/Load + Audio + Accessibility, Issues #17/#18) ist der aktuelle Meilenstein. M4 ist noch nicht begonnen.
 
 Das bestehende Web-Spiel (React 19 + Express 5, 2D-Canvas, Root-Verzeichnis) ist von keinem der Meilenstein berührt — `/game` entsteht additiv und parallel dazu (siehe ADR 001, Konsequenzen).
 
@@ -16,13 +16,13 @@ Jeder Meilenstein gilt erst als abgeschlossen, wenn er die projektweite Definiti
 
 ## Übersicht
 
-| Meilenstein | Titel | Entspricht |
-|---|---|---|
-| M0 | Projektgrundgerüst + CI | Stage C aus ADR 001 |
-| M1 | Spielercharakter + Kamera + Steuerung | Folge-Session 1 |
-| M2 | Quest-/Dialog-/Debattensystem | Folge-Session 2 |
-| M3 | Save/Load + Audio + Accessibility | Folge-Session 3 |
-| M4 | Polish + Export-Builds + Release | Folge-Session 4 |
+| Meilenstein | Titel | Entspricht | Status |
+|---|---|---|---|
+| M0 | Projektgrundgerüst + CI | Stage C aus ADR 001 | ✅ abgeschlossen |
+| M1 | Spielercharakter + Kamera + Steuerung | Folge-Session 1 | ✅ abgeschlossen (PR #36) |
+| M2 | Quest-/Dialog-/Debattensystem | Folge-Session 2 | ✅ abgeschlossen (PRs #37, #38, #39; Issues #14, #15, #16) |
+| M3 | Save/Load + Audio + Accessibility | Folge-Session 3 | in Arbeit (Issues #17, #18) |
+| M4 | Polish + Export-Builds + Release | Folge-Session 4 | offen (Issue #19) |
 
 Reihenfolge ist strikt sequenziell — jeder Meilenstein baut auf der lauffähigen Grundlage des vorherigen auf. Kein Meilenstein wird vorgezogen, solange der vorherige nicht die Definition of Done erfüllt.
 
@@ -30,7 +30,7 @@ Reihenfolge ist strikt sequenziell — jeder Meilenstein baut auf der lauffähig
 
 ## M0 — Projektgrundgerüst + CI (= Stage C)
 
-**Diese Sitzung: ggf. direkt im Anschluss begonnen.**
+**✅ Abgeschlossen.**
 
 ### Ziel
 
@@ -65,7 +65,7 @@ Siehe [`docs/planning/definition-of-done.md`](definition-of-done.md). Zusätzlic
 
 ## M1 — Spielercharakter + Kamera + Steuerung
 
-**Nicht Teil der aktuellen Sitzung — Planungsgegenstand für eine künftige Session.**
+**✅ Abgeschlossen (PR #36).**
 
 ### Ziel
 
@@ -96,7 +96,7 @@ Siehe [`docs/planning/definition-of-done.md`](definition-of-done.md). Zusätzlic
 
 ## M2 — Quest-/Dialog-/Debattensystem (3D-Pendant zum Web-`DebateInterface`)
 
-**Nicht Teil der aktuellen Sitzung — Planungsgegenstand für eine künftige Session.**
+**✅ Abgeschlossen (PRs #37, #38, #39; Issues #14, #15, #16).**
 
 ### Ziel
 
@@ -128,7 +128,7 @@ Siehe [`docs/planning/definition-of-done.md`](definition-of-done.md). Zusätzlic
 
 ## M3 — Save/Load + Audio + Accessibility
 
-**Nicht Teil der aktuellen Sitzung — Planungsgegenstand für eine künftige Session.**
+**Aktueller Meilenstein (Issue #17 Save/Load, Issue #18 Audio/Accessibility).**
 
 ### Ziel
 

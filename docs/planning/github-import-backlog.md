@@ -50,3 +50,7 @@ Issues #4–#6 sind unabhängig vom Godot-Migrationspfad und sofort umsetzbar (`
 - Keine weiteren Labels/Milestones außer den oben genannten — `priority:p0` bleibt ungenutzt, bis ein echter Blocker auftritt.
 - Die volle Issue-Beschreibung je Thema lebt ausschließlich im jeweiligen GitHub-Issue, nicht zusätzlich in diesem Dokument (Vermeidung von Doppelpflege/Drift).
 - Stage C (Godot-Fundament, referenziert Issues #7 + #8) ist eigener, separater Branch/PR — nicht Teil dieser Stage-B-Mutation.
+
+## 5. Status-Addendum (Stand 2026-07-01)
+
+Issues #4–#16 sind geschlossen (M0, M1 und M2 vollständig abgeschlossen). Offen sind #17 (Save/Load, M3), #18 (Audio- und Accessibility-Grundausstattung, M3) und #19 (Export-Builds und Release-Prozess, M4).
