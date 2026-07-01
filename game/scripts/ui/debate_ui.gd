@@ -1,3 +1,4 @@
+class_name DebateUI
 extends CanvasLayer
 ## Debatten-UI (Issue #16) — 3D-Pendant zum Web-`DebateInterface`.
 ##
@@ -177,7 +178,11 @@ func _on_answer(answer: String) -> void:
 		return
 	var res := _evaluator.evaluate(_current_question_id, answer)
 	if not bool(res.get("valid", false)):
+		# Ungültige Bewertung (z. B. fehlende Stance-Daten für die Frage-ID): Antwort-Buttons
+		# deaktivieren und Schließen anbieten, damit der Spieler nicht in der UI gefangen ist.
 		_feedback_label.text = str(res.get("feedback", ""))
+		_set_answer_buttons_enabled(false)
+		_close_button.show()
 		return
 	var won := bool(res.get("correct", false))
 	_feedback_label.text = str(res.get("feedback", ""))

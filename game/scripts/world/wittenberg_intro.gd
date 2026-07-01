@@ -45,8 +45,8 @@ func _build_quest_stations() -> void:
 		{"qid": 3, "pos": Vector3(4, 0, -6), "npc": OGA + "rpg-characters/Warrior.obj"},
 	]
 	for s in stations:
-		var trigger := trigger_scene.instantiate() as Area3D
-		trigger.set("question_id_override", int(s["qid"]))
+		var trigger := trigger_scene.instantiate() as QuestStationTrigger
+		trigger.question_id_override = int(s["qid"])
 		add_child(trigger)
 		trigger.position = s["pos"] as Vector3
 		var npc := _load_model(s["npc"] as String)

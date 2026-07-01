@@ -1,3 +1,4 @@
+class_name QuestStationTrigger
 extends Area3D
 ## Begehbarer Quest-Stations-Trigger (Issue #16): öffnet die Debatten-UI, sobald der
 ## Spieler den Bereich betritt. Nutzt das QuestStation-Modell (#14) — Frage-ID wird aus
@@ -56,7 +57,11 @@ func _open_debate(question_id: int) -> void:
 	if _debate_ui == null:
 		push_error("[quest_station_trigger] DebateUI-Instanziierung fehlgeschlagen (kaputte/fehlende Szene) — keine UI geöffnet")
 		return
-	get_tree().root.add_child(_debate_ui)
+	# An die aktuelle Szene hängen, damit die UI mit dem Level entladen wird und nicht als
+	# Waise unter /root über einer Folgeszene (z. B. Hauptmenü) hängen bleibt. In headless
+	# --script-Läufen ist current_scene null → Fallback auf root.
+	var parent: Node = get_tree().current_scene if get_tree().current_scene != null else get_tree().root
+	parent.add_child(_debate_ui)
 	if _debate_ui.has_signal("debate_finished"):
 		_debate_ui.connect("debate_finished", _on_debate_finished)
 	_debate_ui.call("open_for_question", question_id)
