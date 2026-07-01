@@ -50,6 +50,12 @@ try {
   process.exit(1);
 }
 
+// JSON.parse kann null/Array/Primitive liefern — sauber abfangen statt späterem TypeError.
+if (!data || typeof data !== "object" || Array.isArray(data)) {
+  console.error("FEHLER: theology_questions.json ist kein gültiges JSON-Objekt");
+  process.exit(1);
+}
+
 if (typeof data.version !== "number") errors.push("version fehlt oder ist keine Zahl");
 
 if (!Array.isArray(data.questions)) {
@@ -61,6 +67,10 @@ if (!Array.isArray(data.questions)) {
 
   const ids = [];
   for (const q of data.questions) {
+    if (!q || typeof q !== "object") {
+      errors.push(`ungültiger Eintrag im questions-Array: ${JSON.stringify(q)}`);
+      continue;
+    }
     ids.push(q.id);
     if (typeof q.id !== "number") {
       errors.push(`Frage ohne numerische id: ${JSON.stringify(q).slice(0, 60)}`);
@@ -80,7 +90,7 @@ if (!Array.isArray(data.questions)) {
   }
 
   for (const exp of EXPECTED) {
-    const q = data.questions.find((x) => x.id === exp.id);
+    const q = data.questions.find((x) => x && typeof x === "object" && x.id === exp.id);
     if (!q) {
       errors.push(`kanonische Frage id=${exp.id} fehlt`);
       continue;
@@ -116,8 +126,10 @@ if (!importMatch) {
   );
 } else {
   const importedId = importMatch[1]; // reine \w+-Zeichen, sicher als Regex-Literal
+  // Typ-Annotation optional (TS kann sie aus dem JSON-Import inferieren; `Array<Question>`
+  // wäre ebenso gültig). Invariante bleibt: an DENSELBEN importierten Identifier gebunden.
   const reExportRe = new RegExp(
-    `QUESTIONS\\s*:\\s*Question\\[\\]\\s*=\\s*${importedId}\\.questions`
+    `QUESTIONS(?:\\s*:\\s*[^=]+)?\\s*=\\s*${importedId}\\.questions`
   );
   if (!reExportRe.test(constantsSrc)) {
     errors.push(
@@ -139,7 +151,8 @@ try {
 // Konkret die `const PATH := "..."`-Zuweisung prüfen (nicht bloß irgendeine
 // Erwähnung des Pfads in einem Kommentar) — sonst bliebe ein geänderter const
 // bei belassenem Doc-Kommentar unentdeckt.
-const godotPathAssign = /const\s+PATH\s*:=\s*["']res:\/\/resources\/theology\/theology_questions\.json["']/;
+// GDScript erlaubt `const PATH = "..."` und `const PATH := "..."` — beide akzeptieren.
+const godotPathAssign = /const\s+PATH\s*(?::=|=)\s*["']res:\/\/resources\/theology\/theology_questions\.json["']/;
 if (autoloadSrc && !godotPathAssign.test(autoloadSrc)) {
   errors.push(
     "game/scripts/autoload/theology_data.gd: const PATH zeigt nicht mehr auf res://resources/theology/theology_questions.json — Godot würde von der Web-Quelle divergieren (Risk #6)"
