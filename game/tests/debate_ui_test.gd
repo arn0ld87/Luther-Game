@@ -35,6 +35,9 @@ func _initialize() -> void:
 	if not _test_trigger():
 		quit(1)
 		return
+	if not _test_progress():
+		quit(1)
+		return
 
 	print("ALL TESTS PASSED")
 	quit(0)
@@ -83,11 +86,11 @@ func _test_debate_ui_win() -> bool:
 		return _fail("DebateUI: debate_finished(won=true) nicht korrekt emittiert")
 	if not bool(ui.call("is_close_available")):
 		return _fail("DebateUI: Schließen-Button nach Abschluss nicht sichtbar")
-	ui.call("close_debate")
+	ui.call("press_close_for_test")
 	await process_frame
 	if is_instance_valid(ui):
-		return _fail("DebateUI: close_debate() hat die UI nicht aus dem Baum entfernt")
-	print("PASS DebateUI: Frage 1 geladen, 'nein' -> SIEG + Signal + Schließen")
+		return _fail("DebateUI: Schließen-Button (pressed -> close_debate) hat die UI nicht aus dem Baum entfernt")
+	print("PASS DebateUI: Frage 1 geladen, 'nein' -> SIEG + Signal + Schließen (Signal-Pfad)")
 	return true
 
 
@@ -127,4 +130,59 @@ func _test_trigger() -> bool:
 	dummy.queue_free()
 	trigger.queue_free()
 	print("PASS Trigger: Betreten öffnet Debatte für Frage 3")
+	return true
+
+
+## AK3: sichtbarer Spielfortschritt über die Stationen. Prüft, dass ein Sieg im globalen
+## DebateProgress gezählt wird und die Station verbraucht bleibt, eine Niederlage NICHT
+## zählt und die Station wieder betretbar macht, und die UI-Anzeige den Stand spiegelt.
+func _test_progress() -> bool:
+	var progress := root.get_node_or_null("/root/DebateProgress")
+	if progress == null:
+		return _fail("Progress: DebateProgress-Autoload nicht verfügbar")
+	progress.call("reset")
+	var ps: PackedScene = load("res://scenes/world/QuestStationTrigger.tscn")
+
+	# Sieg an Station 1 -> gezählt, Station bleibt verbraucht
+	var t1 := ps.instantiate() as Area3D
+	t1.set("question_id_override", 1)
+	root.add_child(t1)
+	var d1 := CharacterBody3D.new()
+	root.add_child(d1)
+	t1.call("_on_body_entered", d1)
+	var ui1 := t1.call("get_debate_ui") as CanvasLayer
+	if ui1 == null:
+		return _fail("Progress: Trigger 1 hat keine UI geöffnet")
+	ui1.call("_on_answer", "nein")
+	if not bool(progress.call("is_won", 1)):
+		return _fail("Progress: Sieg an Station 1 nicht in DebateProgress markiert")
+	if int(progress.call("won_count")) != 1:
+		return _fail("Progress: won_count sollte 1 sein nach einem Sieg")
+	if not bool(t1.get("_triggered")):
+		return _fail("Progress: gewonnene Station sollte verbraucht bleiben (_triggered=true)")
+	if str(ui1.call("get_progress_text")).find("1/3") == -1:
+		return _fail("Progress: UI-Anzeige sollte nach Sieg '1/3' zeigen, war '%s'" % str(ui1.call("get_progress_text")))
+
+	# Niederlage an Station 2 -> nicht gezählt, Station wieder betretbar
+	var t2 := ps.instantiate() as Area3D
+	t2.set("question_id_override", 2)
+	root.add_child(t2)
+	var d2 := CharacterBody3D.new()
+	root.add_child(d2)
+	t2.call("_on_body_entered", d2)
+	var ui2 := t2.call("get_debate_ui") as CanvasLayer
+	ui2.call("_on_answer", "ja")
+	if bool(t2.get("_triggered")):
+		return _fail("Progress: verlorene Station sollte wieder betretbar sein (_triggered=false)")
+	if int(progress.call("won_count")) != 1:
+		return _fail("Progress: Niederlage darf won_count nicht erhöhen")
+
+	ui1.queue_free()
+	ui2.queue_free()
+	d1.queue_free()
+	d2.queue_free()
+	t1.queue_free()
+	t2.queue_free()
+	progress.call("reset")
+	print("PASS Progress: Sieg zählt + Station verbraucht, Niederlage wiederholbar, UI zeigt 1/3")
 	return true

@@ -15,6 +15,7 @@ var _evaluator := TheologyEvaluator.new()
 var _current_question_id: int = -1
 var _finished: bool = false
 
+var _progress_label: Label
 var _question_label: Label
 var _context_label: Label
 var _feedback_label: Label
@@ -55,6 +56,10 @@ func _build_ui() -> void:
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 12)
 	margin.add_child(vbox)
+
+	_progress_label = Label.new()
+	_progress_label.modulate = Color(0.7, 0.85, 1.0)
+	vbox.add_child(_progress_label)
 
 	_question_label = Label.new()
 	_question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -106,6 +111,8 @@ func open_for_question(question_id: int) -> void:
 	var q := _get_question(question_id)
 	_question_label.text = str(q.get("text", "(keine Frage gefunden)"))
 	_context_label.text = str(q.get("context", ""))
+	_connect_progress()
+	_update_progress_label()
 	_reset_answer_state()
 	show_ui()
 
@@ -119,6 +126,36 @@ func _get_question(question_id: int) -> Dictionary:
 		if result is Dictionary:
 			return result as Dictionary
 	return {}
+
+
+## Autoload-Lookup per Node-Pfad (headless-robust, wie bei TheologyData) — der globale
+## Identifier DebateProgress ist in --script-Läufen nicht garantiert verfügbar.
+func _get_progress() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().root.get_node_or_null("/root/DebateProgress")
+
+
+func _connect_progress() -> void:
+	var progress := _get_progress()
+	if progress != null and not progress.is_connected("progress_changed", _on_progress_changed):
+		progress.connect("progress_changed", _on_progress_changed)
+
+
+func _update_progress_label() -> void:
+	var progress := _get_progress()
+	if progress != null:
+		_set_progress_text(int(progress.call("won_count")), int(progress.call("total")))
+	else:
+		_progress_label.text = ""
+
+
+func _on_progress_changed(won: int, total: int) -> void:
+	_set_progress_text(won, total)
+
+
+func _set_progress_text(won: int, total: int) -> void:
+	_progress_label.text = "Fortschritt: %d/%d Debatten gewonnen" % [won, total]
 
 
 func _reset_answer_state() -> void:
@@ -180,9 +217,19 @@ func get_result_text() -> String:
 	return _result_label.text if _result_label != null else ""
 
 
+func get_progress_text() -> String:
+	return _progress_label.text if _progress_label != null else ""
+
+
 func is_finished() -> bool:
 	return _finished
 
 
 func is_close_available() -> bool:
 	return _close_button != null and _close_button.visible
+
+
+## Löst den Schließen-Button über seinen echten pressed-Signal-Pfad aus (testet die
+## Verdrahtung _close_button.pressed -> close_debate mit, nicht nur close_debate selbst).
+func press_close_for_test() -> void:
+	_close_button.pressed.emit()

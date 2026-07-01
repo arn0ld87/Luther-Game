@@ -47,8 +47,25 @@ func _open_debate(question_id: int) -> void:
 		push_warning("[quest_station_trigger] debate_ui_scene nicht gesetzt — keine UI geöffnet")
 		return
 	_debate_ui = debate_ui_scene.instantiate() as CanvasLayer
+	if _debate_ui == null:
+		push_error("[quest_station_trigger] DebateUI-Instanziierung fehlgeschlagen (kaputte/fehlende Szene) — keine UI geöffnet")
+		return
 	get_tree().root.add_child(_debate_ui)
+	if _debate_ui.has_signal("debate_finished"):
+		_debate_ui.connect("debate_finished", _on_debate_finished)
 	_debate_ui.call("open_for_question", question_id)
+
+
+## Reagiert auf den Debattenausgang (AK3: sichtbarer Spielfortschritt): ein Sieg wird im
+## globalen DebateProgress gezählt und die Station bleibt verbraucht; eine Niederlage macht
+## die Station wieder betretbar, sodass der Spieler sie nach dem Verlassen erneut angehen kann.
+func _on_debate_finished(_question_id: int, won: bool) -> void:
+	if won:
+		var progress := get_tree().root.get_node_or_null("/root/DebateProgress")
+		if progress != null:
+			progress.call("mark_won", _question_id)
+	else:
+		_triggered = false
 
 
 ## Test-Hilfe: die zuletzt geöffnete Debatten-UI (oder null).
