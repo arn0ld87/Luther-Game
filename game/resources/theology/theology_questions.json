@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "shared/theology_questions.json",
+  "source": "game/resources/theology/theology_questions.json",
   "questions": [
     {
       "id": 1,

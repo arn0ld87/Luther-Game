@@ -20,3 +20,8 @@ jobs:
         run: npm ci
       - name: Run typecheck
         run: npm run typecheck
+      - name: Check theology SSOT consistency (Issue #15, Risk #6)
+        # Deterministisches Node-Gate: sichert, dass die 3 theologischen Fragen
+        # konsistent bleiben und constants.ts (Web) weiterhin aus derselben JSON
+        # liest wie Godot (TheologyData) — keine Doppelpflege.
+        run: npm run check:theology
