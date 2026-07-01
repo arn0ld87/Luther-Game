@@ -57,10 +57,8 @@ func _on_physics_frame() -> void:
 		phase = "move"
 		frame = 0
 		move_start_x = player.global_position.x
-		var key_event := InputEventKey.new()
-		key_event.physical_keycode = KEY_D # Player.gd reads is_physical_key_pressed(), not is_key_pressed()
-		key_event.pressed = true
-		Input.parse_input_event(key_event)
+		# Player.gd nutzt jetzt InputMap-Actions statt physischer Tastencodes.
+		Input.action_press("move_right")
 		return
 
 	if phase == "move":

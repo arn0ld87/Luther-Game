@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c2jfdfj0iiwhe"
-path="res://.godot/imported/wall.glb-d1a1700f719441443d45c5d12d9886a9.scn"
+uid="uid://cxal4teguo3y8"
+path="res://.godot/imported/monk.glb-a354290d26b4741a4ca0d940f87b1e98.scn"
 
 [deps]
 
-source_file="res://assets/buildings/kenney_castle-kit/wall.glb"
-dest_files=["res://.godot/imported/wall.glb-d1a1700f719441443d45c5d12d9886a9.scn"]
+source_file="res://assets/third_party/opengameart/monk.glb"
+dest_files=["res://.godot/imported/monk.glb-a354290d26b4741a4ca0d940f87b1e98.scn"]
 
 [params]
 

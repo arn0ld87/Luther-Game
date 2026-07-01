@@ -1,5 +1,6 @@
 import { Question, TileType, MapData, ItemType, EnemyType, Enemy, Direction } from './types';
 import { createEnemy } from './engine/Enemy';
+import theologyQuestions from './game/resources/theology/theology_questions.json';
 
 // Zelda ALTTP-inspired color palette (SNES accurate)
 export const COLORS = {
@@ -140,20 +141,4 @@ export function generateCollisionMap(tiles: number[][]): boolean[][] {
 // Initialize the collision map
 INITIAL_MAP.collisions = generateCollisionMap(INITIAL_MAP.tiles);
 
-export const QUESTIONS: Question[] = [
-  {
-    id: 1,
-    text: "Muss ich gute Werke tun, um von Gott geliebt zu werden?",
-    context: "Matthäus 7,21 - Nicht jeder, der zu mir sagt: Herr, Herr! wird in das Himmelreich kommen...",
-  },
-  {
-    id: 2,
-    text: "Ist der Papst das Oberhaupt der Kirche?",
-    context: "Matthäus 16,18 - Du bist Petrus, und auf diesen Felsen will ich meine Gemeinde bauen...",
-  },
-  {
-    id: 3,
-    text: "Haben wir einen freien Willen zum Guten?",
-    context: "Römer 3,23 - Sie sind allesamt Sünder und ermangeln des Ruhmes...",
-  },
-];
+export const QUESTIONS: Question[] = theologyQuestions.questions;

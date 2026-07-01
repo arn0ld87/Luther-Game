@@ -169,17 +169,6 @@
       "status": "approved"
     },
     {
-      "id": "buildings_kenney_castle_kit_wall_glb",
-      "pack": "Kenney Castle Kit",
-      "path": "res://assets/buildings/kenney_castle-kit/wall.glb",
-      "kind": "model",
-      "license": "CC0-1.0",
-      "attribution_required": false,
-      "author": "Kenney",
-      "source": "https://kenney.nl/assets/castle-kit",
-      "status": "approved"
-    },
-    {
       "id": "quaternius_medieval_village_megakit_doorframe_round_wooddark_gltf",
       "pack": "Quaternius Medieval Village MegaKit",
       "path": "res://assets/third_party/quaternius/medieval-village/DoorFrame_Round_WoodDark.gltf",
@@ -419,6 +408,17 @@
       "attribution_required": false,
       "author": "@Quaternius",
       "source": "https://opengameart.org/content/lowpoly-rpg-characters",
+      "status": "approved"
+    },
+    {
+      "id": "opengameart_monk_character_monk_glb",
+      "pack": "OpenGameArt Monk Character",
+      "path": "res://assets/third_party/opengameart/monk.glb",
+      "kind": "model",
+      "license": "CC0-1.0",
+      "attribution_required": false,
+      "author": "CDmir (Collaborators: TinyWorlds)",
+      "source": "https://opengameart.org/content/monk",
       "status": "approved"
     },
     {
