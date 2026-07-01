@@ -32,7 +32,7 @@ Rigging/Animation.
 
 ## Spätere höherwertige Alternative: `oga_monk_cc0.blend`
 
-Eine höherwertige, gerigg­te Monk-Variante liegt als `.blend` vor und bleibt für
+Eine höherwertige, geriggte Monk-Variante liegt als `.blend` vor und bleibt für
 einen späteren Austausch vorgesehen (kein Teil dieses Platzhalter-Issues):
 
 - **Quelle (git-ignoriert):** `godot_assets/characters/oga_monk_cc0.blend`
@@ -50,8 +50,8 @@ Godot importiert `.blend` nicht direkt ohne Blender-Toolchain; für die
 2. `File → Export → glTF 2.0 (.glb)`; Format **glTF Binary (.glb)**,
    `+Y up`, Meshes + Materials aktiv.
 3. Ziel gemäß Staging-Konvention:
-   `game/assets/third_party/opengameart/monk.glb`
-   (Audit-Zielpfad: `game/assets/third_party/opengameart/monk.blend`).
+   `res://assets/third_party/opengameart/monk.glb`
+   (Audit-Zielpfad: `res://assets/third_party/opengameart/monk.blend`).
 4. Godot importiert die GLB automatisch; das `Visual`-Mesh in
    `scenes/Player.tscn` auf die neue Mesh/Szene umstellen und Scale/Offset
    analog neu bestimmen.
