@@ -108,6 +108,7 @@ func _build_ui() -> void:
 
 ## Öffnet die Debatte für die gegebene Theologie-Frage-ID (aus TheologyData).
 func open_for_question(question_id: int) -> void:
+	_ensure_built()
 	_current_question_id = question_id
 	var q := _get_question(question_id)
 	_question_label.text = str(q.get("text", "(keine Frage gefunden)"))

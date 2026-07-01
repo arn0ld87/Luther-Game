@@ -52,10 +52,13 @@ func _resolve_question_id() -> int:
 func _open_debate(question_id: int) -> void:
 	if debate_ui_scene == null:
 		push_warning("[quest_station_trigger] debate_ui_scene nicht gesetzt — keine UI geöffnet")
+		# Station nicht verbrauchen: ohne UI wäre sie sonst dauerhaft blockiert (Soft-Lock).
+		_triggered = false
 		return
 	_debate_ui = debate_ui_scene.instantiate() as CanvasLayer
 	if _debate_ui == null:
 		push_error("[quest_station_trigger] DebateUI-Instanziierung fehlgeschlagen (kaputte/fehlende Szene) — keine UI geöffnet")
+		_triggered = false
 		return
 	# An die aktuelle Szene hängen, damit die UI mit dem Level entladen wird und nicht als
 	# Waise unter /root über einer Folgeszene (z. B. Hauptmenü) hängen bleibt. In headless
@@ -70,11 +73,11 @@ func _open_debate(question_id: int) -> void:
 ## Reagiert auf den Debattenausgang (AK3: sichtbarer Spielfortschritt): ein Sieg wird im
 ## globalen DebateProgress gezählt und die Station bleibt verbraucht; eine Niederlage macht
 ## die Station wieder betretbar, sodass der Spieler sie nach dem Verlassen erneut angehen kann.
-func _on_debate_finished(_question_id: int, won: bool) -> void:
+func _on_debate_finished(question_id: int, won: bool) -> void:
 	if won:
 		var progress := get_tree().root.get_node_or_null("/root/DebateProgress")
 		if progress != null:
-			progress.call("mark_won", _question_id)
+			progress.call("mark_won", question_id)
 		# Station bleibt verbraucht — explizit auch im Retry-nach-Niederlage-Pfad nötig,
 		# wo _triggered durch die vorherige Niederlage bereits auf false zurückgesetzt wurde.
 		_triggered = true
