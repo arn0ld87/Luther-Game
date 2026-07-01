@@ -4,16 +4,21 @@ extends CanvasLayer
 ##
 ## Minimal-Overlay (dunkles Backdrop + Button-Reihe), Code-generiert statt als
 ## .tscn, damit kein zusätzlicher Scene-Editor-Schritt nötig ist. Entkoppelt
-## über Signals: das Level (wittenberg_intro) verdrahtet save/load/resume/quit
-## mit SaveManager + Spiellogik, die UI bleibt frei von Spielspezifika.
+## über Signals: das Level (wittenberg_intro) verdrahtet save/load/quit mit
+## SaveManager + Spiellogik, die UI bleibt frei von Spielspezifika.
 ##
 ## process_mode = ALWAYS, damit das Menü auch während `get_tree().paused`
 ## Interaktion erlaubt (Pause friert die Welt ein, nicht das Menü).
+##
+## ESC-Handling (Opus-Review M1) liegt HIER im PauseMenu, nicht im Level: ein
+## pausiertes Level (process_mode INHERIT → PAUSABLE) bekommt bei paused=true
+## kein _input mehr — ESC käme nicht mehr an. PauseMenu mit ALWAYS empfängt
+## den pause-Input in beiden Zuständen und togglet sich selbst + get_tree().paused.
 
 signal save_requested()
 signal load_requested()
-signal resume_requested()
 signal quit_requested()
+signal opened()
 
 var _root: Control
 var _save_btn: Button
@@ -24,23 +29,28 @@ func _ready() -> void:
 	_build_ui()
 	_set_visible(false)
 
-	# Save-Button deaktivieren, wenn es keinen Spielstand gibt — verhindert
+	# Laden-Button deaktivieren, wenn es keinen Spielstand gibt — verhindert
 	# Frustration über einen klickbaren Button, der nichts bewirkt.
 	_load_btn.disabled = not _save_manager_has_save()
 	var sm := _save_manager()
 	if sm != null:
+		# Gemini-Review: nach Save/Load den Laden-Button-Status synchronisieren
+		# (erstmals inaktiv falls kein Stand, aktiv nach erstem Save) und das
+		# Menü nach erfolgreichem Load automatisch schließen (resume).
 		sm.loaded.connect(_on_loaded)
+		sm.saved.connect(_on_saved)
 
 
-## Autoload-Lookup per Node-Pfad (headless-robust, siehe debate_ui.gd) — der
-## globale Identifier SaveManager ist in --script-Läufen nicht garantiert.
-func _save_manager() -> Node:
-	return get_tree().root.get_node_or_null("/root/SaveManager")
-
-
-func _save_manager_has_save() -> bool:
-	var sm := _save_manager()
-	return sm != null and sm.has_method("has_save") and sm.has_save()
+func _input(event: InputEvent) -> void:
+	# ESC öffnet/schließt das Menü in BEIDEN Zuständen (ALWAYS). Konsumiert,
+	# damit kein anderer pause-Handler (z. B. ein künftiger Level-Handler)
+	# dasselbe Event doppelt verarbeitet.
+	if event.is_action_pressed("pause") and not event.is_echo():
+		_toggle()
+		# Event konsumieren, damit kein anderer pause-Handler (z. B. ein
+		# künftiger Level-Handler) dasselbe Event doppelt verarbeitet. CanvasLayer
+		# hat die Methode nicht direkt → über den Viewport.
+		get_viewport().set_input_as_handled()
 
 
 func _build_ui() -> void:
@@ -87,20 +97,22 @@ func _add_button(parent: Control, label: String, cb: Callable) -> Button:
 	return b
 
 
-func toggle() -> void:
+func _toggle() -> void:
 	_set_visible(not _root.visible)
-
-
-func is_open() -> bool:
-	return _root.visible
 
 
 func _set_visible(v: bool) -> void:
 	_root.visible = v
-	# Während das Menü offen ist, läuft die Welt pausiert ( Aufrufer setzt
-	# get_tree().paused). Save-Button nur aktiv, wenn ein Spieler existiert —
-	# wird vom Level beim Öffnen gesetzt (set_can_save).
+	get_tree().paused = v
+	# Save-Button nur aktiv, wenn ein Spieler existiert — wird vom Level beim
+	# Öffnen gesetzt (set_can_save). Load-Button nur, wenn ein Spielstand da ist.
 	_load_btn.disabled = not _save_manager_has_save()
+	if v:
+		opened.emit()
+
+
+func is_open() -> bool:
+	return _root.visible
 
 
 func set_can_save(can: bool) -> void:
@@ -116,7 +128,8 @@ func _on_load() -> void:
 
 
 func _on_resume() -> void:
-	resume_requested.emit()
+	# „Weiterspielen": Menü schließen + entpausieren (gleicher Pfad wie ESC).
+	_set_visible(false)
 
 
 func _on_quit() -> void:
@@ -124,5 +137,23 @@ func _on_quit() -> void:
 
 
 func _on_loaded(_state: Dictionary) -> void:
-	# Nach erfolgreichem Load ist der Button sinnlos bis zum nächsten Save.
+	# Gemini-Review: nach erfolgreichem Load Menü schließen + entpausieren, damit
+	# der Spieler direkt mit dem geladenen Stand weiter spielt.
+	_set_visible(false)
+
+
+func _on_saved() -> void:
+	# Nach erstem Save existiert nun ein Spielstand → Laden-Button aktivieren,
+	# falls er vorher (kein Stand) deaktiviert war.
 	_load_btn.disabled = not _save_manager_has_save()
+
+
+## Autoload-Lookup per Node-Pfad (headless-robust, siehe debate_ui.gd) — der
+## globale Identifier SaveManager ist in --script-Läufen nicht garantiert.
+func _save_manager() -> Node:
+	return get_tree().root.get_node_or_null("/root/SaveManager")
+
+
+func _save_manager_has_save() -> bool:
+	var sm := _save_manager()
+	return sm != null and sm.has_method("has_save") and sm.has_save()
