@@ -29,21 +29,38 @@ jobs:
           path: ~/godot-editor
           key: godot-linux-${{ env.GODOT_VERSION }}
 
-      - name: Download Godot editor (headless build)
+      - name: Download Godot editor (headless build, SHA512-verified)
         if: steps.godot-cache.outputs.cache-hit != 'true'
         run: |
+          set -euo pipefail
           mkdir -p ~/godot-editor
           cd ~/godot-editor
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          curl -fsSL -o SHA512-SUMS.txt \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/SHA512-SUMS.txt"
+          # Supply-Chain-Härtung: offizielle Prüfsumme gegen die ZIP verifizieren,
+          # BEVOR entpackt/ausgeführt wird. Bricht bei Abweichung ab (z. B. abgebrochener
+          # HTTP/2-Download oder manipuliertes Artefakt).
+          EXPECTED="$(grep "Godot_v${GODOT_VERSION}_linux.x86_64.zip" SHA512-SUMS.txt | awk '{print $1}')"
+          if [ -z "${EXPECTED}" ]; then echo "::error::SHA512-Eintrag für Godot-ZIP nicht gefunden"; exit 1; fi
+          echo "${EXPECTED}  godot.zip" | sha512sum -c -
           unzip -q godot.zip
           rm godot.zip
           chmod +x Godot_v${GODOT_VERSION}_linux.x86_64
 
-      - name: Import /game (headless)
+      - name: Import /game (headless, fail on ERROR)
         run: |
+          set -o pipefail
           GODOT_BIN="$HOME/godot-editor/Godot_v${GODOT_VERSION}_linux.x86_64"
-          "$GODOT_BIN" --headless --path game --import --quit-after 1000
+          "$GODOT_BIN" --headless --path game --import --quit-after 1000 2>&1 | tee import.log
+          # Exit-Code 0 genügt nicht: Godot importiert trotz fehlender/kaputter Referenzen
+          # oder Parser-Fehlern (z. B. der frühere export_presets.cfg-Fehler) mit Code 0.
+          # Echte ERROR:/SCRIPT ERROR-Zeilen als Fehlschlag behandeln.
+          if grep -E "^(ERROR|SCRIPT ERROR)" import.log; then
+            echo "::error::Godot-Import meldet ERROR-Zeilen (fehlende/kaputte Asset-Referenzen oder Parser-Fehler)"
+            exit 1
+          fi
 
       - name: Run player movement behavior test (headless)
         run: |
@@ -54,3 +71,13 @@ jobs:
         run: |
           GODOT_BIN="$HOME/godot-editor/Godot_v${GODOT_VERSION}_linux.x86_64"
           "$GODOT_BIN" --headless --path game --script res://tests/camera_rig_test.gd
+
+      - name: Run asset integration test (headless, fail on ERROR)
+        run: |
+          set -o pipefail
+          GODOT_BIN="$HOME/godot-editor/Godot_v${GODOT_VERSION}_linux.x86_64"
+          "$GODOT_BIN" --headless --path game --script res://tests/asset_integration_test.gd 2>&1 | tee asset_test.log
+          if grep -E "^(ERROR|SCRIPT ERROR)" asset_test.log; then
+            echo "::error::Asset-Integrationstest meldet ERROR-Zeilen"
+            exit 1
+          fi
