@@ -221,3 +221,32 @@ Für das Quest-/Dialog-Datenmodell des Godot-Spiels standen zwei native Godot-4.
 | Headless-Test | `game/tests/quest_data_test.gd` | Lädt die Daten zur Laufzeit, prüft Felder + Theologie-Verknüpfung, gibt Output aus; in `godot-validate.yml` verdrahtet |
 
 Dies konkretisiert die in Abschnitt 2.2 skizzierte `QuestionBank.gd`-Idee: Der Autoload heißt `QuestData` und liegt unter `resources/quests/` (statt `resources/questions/`), da er generische Quest-/Dialogstationen modelliert, nicht nur den Fragenkatalog. Das schmale Web-`Question`-Interface (`id`, `text`, `context`) ist als Teilmenge vollständig abgedeckt; die 3D-/Quest-Felder sind additiv und brechen kein Schema für Issue #15 (Content-Migration) oder Issue #16 (Debatten-UI).
+
+## 8. Bewertungslogik der Debatten-UI (M2, Issue #16)
+
+Für die Godot-Debatten-UI (3D-Pendant zum Web-`DebateInterface`) war laut Issue #16 die Bewertungslogik-Architektur zu entscheiden: **(a)** Wiederverwendung des bestehenden Express-Backends (`/api/check-theology`) per `HTTPRequest` vs. **(b)** eigenständige lokale GDScript-Validierung. Die Entscheidung ist hier verbindlich getroffen:
+
+**Entscheidung: (b) Lokale, self-contained GDScript-Bewertung.**
+
+| Kriterium | (a) HTTP zum Express/Gemini-Backend | **(b) Lokal in GDScript (gewählt)** |
+|---|---|---|
+| Headless-CI-Test (DoD-Pflicht) | nicht deterministisch testbar — bräuchte laufenden Server + `GEMINI_API_KEY` + Netzwerk in CI; Gemini-Antworten sind nicht-deterministisch | **deterministisch, ohne Netzwerk/Secret headless testbar** (`tests/debate_ui_test.gd`) |
+| Spielbarkeit im Export-Build (DoD-Pflicht) | gebrochen — ein ausgeliefertes Desktop-Spiel, das `localhost:3000` ruft, funktioniert nur mit parallel laufendem `npm run server` | **sofort spielbar, keine Laufzeit-Abhängigkeit** |
+| Hard Rule „kein `GEMINI_API_KEY` im Client" | erfordert Sorgfalt (Key bleibt serverseitig, aber neue Kopplung) | **trivial erfüllt — kein Key, kein Backend** |
+| Freitext-/LLM-Feinheit (Begründungstiefe) | ja (Gemini bewertet Freitext) | nein — bewusst binäre Ja/Nein-Haltung (laut Roadmap für M2 zulässig: „richtig/falsch … ohne zwingend den Gemini-Pfad") |
+| Reversibilität | — | Bewertung ist hinter `TheologyEvaluator` gekapselt → ein späterer Wechsel zu (a) betrifft nur diese eine Datei |
+
+**Begründung:** Die harten Definition-of-Done-Anforderungen (headless-CI-Test, im Export lauffähig) kann (a) prinzipiell nicht erfüllen, ohne eine dauerhafte Laufzeit-Kopplung des Desktop-Spiels an einen Node/Express/Gemini-Stack einzuführen. (b) ist die kleinste reversible M2-Lösung: self-contained, deterministisch, ohne Secret.
+
+**Umgang mit der Datenlage (Risk 6 / Rule 9):** `theology_questions.json` enthält nur `id`/`text`/`context` (keine Antwortoptionen). Statt das #14-Datenmodell zu ändern (dessen Non-Goal) oder neue theologische Prosa zu verfassen (Rule 9), führt #16 eine **eigene, schmale Bewertungsdatei** `game/resources/theology/debate_stances.json` ein: je Frage die reformatorische Ja/Nein-Haltung (`correct_answer: "nein"` für alle drei — die historische Kern-These der Reformation, die das Spiel ohnehin lehrt) plus generisches Feedback, das nur auf die bereits vorhandene Bibelstelle verweist. Kein neuer Doktrin-Text, keine Änderung an der Theologie-SSOT, keine Änderung am Web-Spiel.
+
+**Realisierung im Code (`/game`):**
+
+| Baustein | Datei | Rolle |
+|---|---|---|
+| Bewertung (gekapselt) | `game/scripts/data/theology_evaluator.gd` (`class_name TheologyEvaluator`) | `evaluate(question_id, answer) -> {valid, correct, feedback}`, liest `debate_stances.json`; einziger Ort, den ein späterer HTTP-Wechsel berührt |
+| Bewertungsdaten | `game/resources/theology/debate_stances.json` | reformatorische Ja/Nein-Haltung + Feedback je Frage |
+| UI | `game/scenes/ui/DebateUI.tscn` + `game/scripts/ui/debate_ui.gd` | CanvasLayer-Overlay (erste UI-Szene im Projekt); zeigt Frage+Kontext aus `TheologyData`, Ja/Nein-Antwort, sichtbares Sieg/Niederlage-Ergebnis, Signal `debate_finished` |
+| Trigger | `game/scenes/world/QuestStationTrigger.tscn` + `game/scripts/world/quest_station_trigger.gd` | begehbarer `Area3D`; öffnet die Debatte beim Betreten (Frage-ID aus `QuestStation` #14 oder direktem Override) |
+| Integration | `game/scripts/world/wittenberg_intro.gd` | 3 begehbare Stationen mit sichtbaren Gesprächspartnern (katalogisierte Assets Cleric/Wizard/Warrior) auf dem Kirchenvorplatz — die 3 bestehenden Fragen sind durchspielbar |
+| Test | `game/tests/debate_ui_test.gd` | headless: Evaluator (3 Fragen), UI-Sieg/Niederlage + Signal, Trigger öffnet Debatte |
