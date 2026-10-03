@@ -20,7 +20,11 @@ jobs:
     env:
       GODOT_VERSION: "4.7-stable"
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Asset-License-Gate (jede Modell-/Audio-Datei muss katalogisiert sein)
         # node ist auf ubuntu-latest vorinstalliert; kein Godot nötig.
@@ -30,7 +34,7 @@ jobs:
 
       - name: Cache Godot editor binary
         id: godot-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/godot-editor
           key: godot-linux-${{ env.GODOT_VERSION }}
